@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Horror Text Adventure</title>
+</head>
+
+<body>
+  <div id="setup-screen">
+    <div class="game-header">
+      <h1>ホラーテキストアドベンチャー</h1>
+    </div>
+    <div class="setup-container">
+      <h2>ゲーム設定</h2>
+      <div class="form-group">
+        <label for="api-type">API Type:</label>
+        <select id="api-type">
+          <option value="gemini">Gemini</option>
+          <option value="openai">OpenAI Compatible</option>
+        </select>
+      </div>
+      <div class="form-group" id="model-container" style="display: none;">
+        <label for="model-select">Model:</label>
+        <select id="model-select">
+          <!-- Options will be populated dynamically -->
+        </select>
+      </div>
+      <div class="form-group" id="api-url-container">
+        <label for="api-url">Endpoint URL:</label>
+        <input type="text" id="api-url" value="http://localhost:1234">
+      </div>
+      <div class="form-group">
+        <label for="api-key">API Key:</label>
+        <input type="password" id="api-key" placeholder="Required for Gemini">
+      </div>
+      <button id="start-game-btn">ゲーム開始</button>
+    </div>
+  </div>
+
+  <div id="game-screen" style="display: none;">
+    <div id="app">
+      <div class="game-container">
+        <header class="game-header">
+          <h1>ホラーテキストアドベンチャー</h1>
+          <button id="log-toggle" class="log-toggle-btn">ログ表示</button>
+        </header>
+
+        <main class="game-main">
+          <section id="scene-description" class="scene-description">
+            <!-- 情景描写がここに表示される -->
+          </section>
+
+          <section id="choices-container" class="choices-container">
+            <!-- 選択肢ボタンがここに表示される -->
+          </section>
+        </main>
+
+        <div id="log-panel" class="log-panel" style="display: none;">
+          <div class="log-header">
+            <h2>ゲームログ</h2>
+            <button id="log-close" class="log-close-btn">×</button>
+          </div>
+          <div id="log-content" class="log-content"></div>
+        </div>
+
+        <div id="loading-indicator" class="loading-indicator" style="display: none;">
+          <div class="spinner"></div>
+          <span>思考中...</span>
+        </div>
+
+        <div id="error-message" class="error-message" style="display: none;"></div>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>

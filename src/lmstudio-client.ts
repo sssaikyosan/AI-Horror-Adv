@@ -16,7 +16,7 @@ export interface LMStudioCompletionResponse {
     object: string;
     created: number;
     model: string;
-    choices: Array<{ 
+    choices: Array<{
         index: number;
         message: {
             role: string;
@@ -31,7 +31,7 @@ export interface LMStudioStreamChunk {
     object: string;
     created: number;
     model: string;
-    choices: Array<{ 
+    choices: Array<{
         index: number;
         delta: {
             role?: string;
@@ -46,7 +46,7 @@ export class LMStudioClient {
     private apiKey: string | undefined;
     private defaultModel: string;
 
-    constructor(baseUrl: string = 'http://localhost:1234', defaultModel: string = 'default', apiKey?: string) {
+    constructor(baseUrl: string = 'http://localhost:1234/v1', defaultModel: string = 'default', apiKey?: string) {
         this.baseUrl = baseUrl;
         this.defaultModel = defaultModel;
         this.apiKey = apiKey;
@@ -92,25 +92,33 @@ export class LMStudioClient {
     }
 
     private async getCompletion(request: LMStudioCompletionRequest): Promise<string> {
-        const response = await fetch(`${this.baseUrl}/v1/chat/completions`, {
-            method: 'POST',
-            headers: this.getHeaders(),
-            body: JSON.stringify(request),
-        });
+        try {
+            const response = await fetch(`${this.baseUrl}/chat/completions`, {
+                method: 'POST',
+                headers: this.getHeaders(),
+                body: JSON.stringify(request),
+            });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+            }
+
+            const data: LMStudioCompletionResponse = await response.json();
+            return data.choices[0]?.message.content || '';
+        } catch (error) {
+            if (error instanceof TypeError && error.message.includes('fetch')) {
+                throw new Error(`ネットワークエラー: LM Studioサーバーに接続できません。URLが正しいか、サーバーが起動しているか確認してください。(${this.baseUrl})`);
+            }
+            throw error;
         }
-
-        const data: LMStudioCompletionResponse = await response.json();
-        return data.choices[0]?.message.content || '';
     }
 
     private async streamResponse(
         request: LMStudioCompletionRequest,
         onToken: (token: string) => void
     ): Promise<string> {
-        const response = await fetch(`${this.baseUrl}/v1/chat/completions`, {
+        const response = await fetch(`${this.baseUrl}/chat/completions`, {
             method: 'POST',
             headers: this.getHeaders(),
             body: JSON.stringify(request),
@@ -167,7 +175,7 @@ export class LMStudioClient {
 
     async getAvailableModels(): Promise<string[]> {
         try {
-            const response = await fetch(`${this.baseUrl}/v1/models`, {
+            const response = await fetch(`${this.baseUrl}/models`, {
                 headers: this.getHeaders(),
             });
             if (!response.ok) {

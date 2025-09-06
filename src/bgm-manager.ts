@@ -3,7 +3,7 @@ export class BGMManager {
     private isPlaying: boolean = false;
     private bgmPath: string;
 
-    constructor(bgmPath: string = '/music.mp3') {
+    constructor(bgmPath: string = './music.mp3') {
         this.bgmPath = bgmPath;
     }
 

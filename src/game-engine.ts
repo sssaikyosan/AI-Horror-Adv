@@ -1,6 +1,7 @@
 import { LMStudioClient, type LMStudioMessage } from './lmstudio-client';
 import { GeminiClient } from './gemini-client';
 import { BGMManager } from './bgm-manager';
+import { VoicevoxClient } from './voicevox-client';
 
 export type GameStatus = 'continue' | 'gameover' | 'gameclear';
 
@@ -24,8 +25,10 @@ export class GameEngine {
     private systemPrompt: string;
     private choices: Choice[] = [];
     private bgmManager: BGMManager;
+    private voicevoxClient: VoicevoxClient;
+    private selectedSpeakerId: number;
 
-    constructor(client: LMStudioClient | GeminiClient) {
+    constructor(client: LMStudioClient | GeminiClient, selectedSpeakerId: number = 0) {
         this.client = client;
         this.gameState = {
             sceneDescription: '',
@@ -34,6 +37,8 @@ export class GameEngine {
             gameStatus: 'continue'
         };
         this.bgmManager = new BGMManager();
+        this.voicevoxClient = new VoicevoxClient();
+        this.selectedSpeakerId = selectedSpeakerId;
 
         this.systemPrompt = `あなたはホラーゲームのゲームマスターです。
 以下のルールに従って不気味で恐怖を煽るゲームを進行してください：
@@ -98,6 +103,10 @@ export class GameEngine {
             };
 
             this.choices = initialScenario.choices || [];
+
+            // 初期情景を読み上げ
+            await this.speakText(initialScenario.sceneDescription);
+
             return {
                 sceneDescription: this.gameState.sceneDescription,
                 choices: this.choices
@@ -105,6 +114,11 @@ export class GameEngine {
 
         } catch (error) {
             console.error('Error initializing game with LLM:', error);
+            console.error('Error initializing game with LLM details:', {
+                name: (error as Error).name,
+                message: (error as Error).message,
+                stack: (error as Error).stack
+            });
             // LLMからの取得に失敗した場合のフォールバック
             this.gameState = {
                 sceneDescription: 'あなたは森の入口に立っている。古い道が奥へと続いている。',
@@ -116,6 +130,10 @@ export class GameEngine {
                 { id: 'explore', text: '周囲を探る', description: '不気味な音の正体を探る' },
                 { id: 'flee', text: '逃げる', description: '危険から離れるために走り出す' }
             ];
+
+            // フォールバックの情景を読み上げ
+            await this.speakText(this.gameState.sceneDescription);
+
             return {
                 sceneDescription: this.gameState.sceneDescription,
                 choices: this.choices
@@ -124,8 +142,11 @@ export class GameEngine {
     }
 
     async makeChoice(choiceId: string): Promise<{ updatedScene: string; newChoices: Choice[] }> {
+        console.log('GameEngine: 選択肢を処理します', { choiceId });
+
         // 再プレイの場合は履歴をクリアして新しいゲームを開始
         if (choiceId === 'restart') {
+            console.log('GameEngine: 再プレイ処理');
             const { sceneDescription, choices } = await this.startGame();
             return {
                 updatedScene: sceneDescription,
@@ -135,6 +156,7 @@ export class GameEngine {
 
         // 選択されたアクションを履歴に追加
         const choiceAction = this.getChoiceActionText(choiceId);
+        console.log('GameEngine: 選択されたアクション', { choiceAction });
         this.gameState.history.push(choiceAction);
         this.gameState.currentStep++;
 
@@ -152,9 +174,9 @@ export class GameEngine {
             } else {
                 response = await (this.client as LMStudioClient).sendMessage(messages);
             }
-            console.log(response);
+            console.log('GameEngine: LLMからのレスポンス', response);
 
-            // 1. <result>タグ内の内容を除去
+            // 1. <think>タグ内の内容を除去
             const withoutResult = response.replace(/<think>[\s\S]*?<\/think>/g, '');
             console.log(withoutResult);
             // 2. JSONオブジェクトを抽出する正規表現
@@ -194,18 +216,31 @@ export class GameEngine {
 
             // 新しい情景描写を履歴に追加
             this.gameState.history.push(this.gameState.sceneDescription);
+
+            // 新しい情景を読み上げ
+            await this.speakText(this.gameState.sceneDescription);
+
             return {
                 updatedScene: this.gameState.sceneDescription,
                 newChoices: this.choices
             };
         } catch (error) {
             console.error('Error processing choice:', error);
+            console.error('Error processing choice details:', {
+                name: (error as Error).name,
+                message: (error as Error).message,
+                stack: (error as Error).stack
+            });
             this.choices = [
                 { id: 'reload', text: '続ける', description: '何とかしてゲームを続ける。' }
             ];
             // エラー時の情景描写も履歴に追加
             const errorScene = this.gameState.sceneDescription + '\\n\\n[エラーが発生しました。ゲームを続行します。]';
             this.gameState.history.push(errorScene);
+
+            // エラー時の情景を読み上げ
+            await this.speakText(errorScene);
+
             return {
                 updatedScene: errorScene,
                 newChoices: this.choices
@@ -277,5 +312,34 @@ export class GameEngine {
         };
         // BGMを停止
         this.bgmManager.stop();
+    }
+
+    /**
+     * テキストを音声で読み上げる
+     * @param text 読み上げるテキスト
+     */
+    async speakText(text: string): Promise<void> {
+        try {
+            console.log('GameEngine: テキストを読み上げます', { text, selectedSpeakerId: this.selectedSpeakerId });
+
+            // Voicevoxが利用可能な場合のみ読み上げを実行
+            const isAvailable = await this.voicevoxClient.isServerAvailable();
+            console.log('GameEngine: Voicevoxサーバーの状態', { isAvailable });
+
+            if (isAvailable) {
+                console.log('GameEngine: Voicevoxサーバーが利用可能です');
+                const result = await this.voicevoxClient.speakText(text, this.selectedSpeakerId);
+                console.log('GameEngine: 音声読み上げ結果', { result });
+            } else {
+                console.warn('Voicevoxサーバーが利用できません。読み上げをスキップします。');
+            }
+        } catch (error) {
+            console.error('GameEngine: 音声読み上げエラー:', error);
+            console.error('GameEngine: 音声読み上げエラーの詳細:', {
+                name: (error as Error).name,
+                message: (error as Error).message,
+                stack: (error as Error).stack
+            });
+        }
     }
 }

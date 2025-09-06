@@ -1,8 +1,11 @@
 export class BGMManager {
     private audio: HTMLAudioElement | null = null;
     private isPlaying: boolean = false;
+    private bgmPath: string;
 
-    constructor(private bgmPath: string = '/music.mp3') {}
+    constructor(bgmPath: string = '/music.mp3') {
+        this.bgmPath = bgmPath;
+    }
 
     /**
      * BGMを再生する

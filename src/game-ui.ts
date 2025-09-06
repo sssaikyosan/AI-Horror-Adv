@@ -11,6 +11,7 @@ export class GameUI {
     private logContent: HTMLElement | null = null;
     
     private isProcessing: boolean = false;
+    private isSpeechEnabled: boolean = true; // 読み上げ機能の有効/無効
 
     constructor(
         gameEngine: GameEngine,
@@ -39,6 +40,9 @@ export class GameUI {
         this.logPanel = document.querySelector('#log-panel');
         this.logContent = document.querySelector('#log-content');
 
+        // 読み上げ機能の設定
+        this.setupSpeechToggle();
+
         this.setupEventListeners();
     }
 
@@ -53,6 +57,30 @@ export class GameUI {
         const logCloseBtn = document.querySelector('#log-close');
         if (logCloseBtn) {
             logCloseBtn.addEventListener('click', () => this.hideLogPanel());
+        }
+    }
+
+    private setupSpeechToggle(): void {
+        const speechToggle = document.querySelector('#speech-toggle');
+        if (speechToggle) {
+            // 初期状態の設定
+            this.updateSpeechSwitchState(speechToggle);
+            
+            speechToggle.addEventListener('click', () => {
+                this.isSpeechEnabled = !this.isSpeechEnabled;
+                this.updateSpeechSwitchState(speechToggle);
+                
+                // ユーザーに設定変更を通知
+                console.log(`読み上げ機能が${this.isSpeechEnabled ? '有効' : '無効'}になりました`);
+            });
+        }
+    }
+
+    private updateSpeechSwitchState(switchElement: Element): void {
+        if (this.isSpeechEnabled) {
+            switchElement.classList.add('on');
+        } else {
+            switchElement.classList.remove('on');
         }
     }
 
@@ -113,12 +141,19 @@ export class GameUI {
     }
 
     async initializeGame(): Promise<void> {
+        console.log('GameUI: ゲームを初期化します');
         this.setProcessingState(true);
         try {
-            const { choices } = await this.gameEngine.startGame();
+            const { sceneDescription, choices } = await this.gameEngine.startGame();
+            console.log('GameUI: ゲーム初期化完了', { sceneDescription, choices });
             this.updateDisplay(choices);
         } catch (error) {
             console.error('Error initializing game:', error);
+            console.error('Error initializing game details:', {
+                name: (error as Error).name,
+                message: (error as Error).message,
+                stack: (error as Error).stack
+            });
             this.showError(error instanceof Error ? error.message : 'Failed to initialize game');
         } finally {
             this.setProcessingState(false);
@@ -165,12 +200,17 @@ export class GameUI {
     }
 
     private async handleChoiceClick(choiceId: string): Promise<void> {
-        if (this.isProcessing) return;
+        console.log('GameUI: 選択肢がクリックされました', { choiceId });
+        if (this.isProcessing) {
+            console.log('GameUI: 処理中のため選択肢を無視します');
+            return;
+        }
 
         this.setProcessingState(true);
 
         try {
             const result = await this.gameEngine.makeChoice(choiceId);
+            console.log('GameUI: 選択肢処理完了', result);
 
             await this.animateSceneUpdate(result.updatedScene);
 

@@ -25,6 +25,48 @@ apiTypeSelect.addEventListener('change', () => {
   updateUIForAPIType(apiTypeSelect.value);
 });
 
+// Audio setup info button in setup screen
+const audioSetupInfoButton = document.getElementById('audio-setup-info-btn');
+const audioSetupInfoModal = document.getElementById('audio-setup-info-modal');
+const audioSetupInfoCloseButton = document.getElementById('audio-setup-info-close-btn');
+
+if (audioSetupInfoButton && audioSetupInfoModal && audioSetupInfoCloseButton) {
+  audioSetupInfoButton.addEventListener('click', () => {
+    audioSetupInfoModal.style.display = 'flex';
+  });
+
+  audioSetupInfoCloseButton.addEventListener('click', () => {
+    audioSetupInfoModal.style.display = 'none';
+  });
+
+  audioSetupInfoModal.addEventListener('click', (event) => {
+    if (event.target === audioSetupInfoModal) {
+      audioSetupInfoModal.style.display = 'none';
+    }
+  });
+}
+
+// API setup info button in setup screen
+const apiSetupInfoButton = document.getElementById('api-setup-info-btn');
+const apiSetupInfoModal = document.getElementById('api-setup-info-modal');
+const apiSetupInfoCloseButton = document.getElementById('api-setup-info-close-btn');
+
+if (apiSetupInfoButton && apiSetupInfoModal && apiSetupInfoCloseButton) {
+  apiSetupInfoButton.addEventListener('click', () => {
+    apiSetupInfoModal.style.display = 'flex';
+  });
+
+  apiSetupInfoCloseButton.addEventListener('click', () => {
+    apiSetupInfoModal.style.display = 'none';
+  });
+
+  apiSetupInfoModal.addEventListener('click', (event) => {
+    if (event.target === apiSetupInfoModal) {
+      apiSetupInfoModal.style.display = 'none';
+    }
+  });
+}
+
 // Reload models when API key changes
 let debounceTimer: number | null = null;
 apiKeyInput.addEventListener('input', () => {

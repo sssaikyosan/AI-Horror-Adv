@@ -42,6 +42,8 @@
           <!-- Options will be populated dynamically -->
         </select>
       </div>
+      <button id="api-setup-info-btn" class="secondary-btn">API設定方法</button>
+      <button id="audio-setup-info-btn" class="secondary-btn">音声設定方法</button>
       <button id="start-game-btn">ゲーム開始</button>
     </div>
   </div>
@@ -90,11 +92,11 @@
 
         <!-- Error Modal -->
         <div id="error-modal" class="modal" style="display: none;">
-            <div class="modal-content">
-                <p id="error-modal-message"></p>
-                <button id="back-to-title-btn" class="modal-button">タイトルに戻る</button>
-                <button id="error-modal-close-btn" class="modal-button secondary">閉じる</button>
-            </div>
+          <div class="modal-content">
+            <p id="error-modal-message"></p>
+            <button id="back-to-title-btn" class="modal-button">タイトルに戻る</button>
+            <button id="error-modal-close-btn" class="modal-button secondary">閉じる</button>
+          </div>
         </div>
       </div>
     </div>
@@ -135,6 +137,55 @@
       <div class="modal-footer">
         <button id="settings-save-btn" class="modal-button">保存</button>
         <button id="settings-cancel-btn" class="modal-button secondary">キャンセル</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio Setup Info Modal -->
+  <div id="audio-setup-info-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>音声設定方法</h2>
+      </div>
+      <div class="modal-body">
+        <p>このゲームでは、VOICEVOX互換のAPIを使用して音声読み上げ機能を利用できます。</p>
+        <p><strong>設定手順:</strong></p>
+        <ol>
+          <li>VOICEVOXを起動します。</li>
+          <li><a href="http://localhost:50021/setting" target="_blank">http://localhost:50021/setting</a>にアクセスし、CORS
+            Policy ModeをALLに設定します</li>
+          <li>VOICEVOXを再起動します。</li>
+          <li>ページを再読み込み(F5キー)します。</li>
+        </ol>
+      </div>
+      <div class="modal-footer">
+        <button id="audio-setup-info-close-btn" class="modal-button">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- API Setup Info Modal -->
+  <div id="api-setup-info-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>API設定方法</h2>
+      </div>
+      <div class="modal-body">
+        <h3>Gemini API (推奨)</h3>
+        <ol>
+          <li><a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a> でAPIキーを取得します。</li>
+          <li>「API Key」フィールドに取得したAPIキーを入力します。</li>
+          <li>使用するモデルを選択します (デフォルト: gemini-2.5-pro)。</li>
+        </ol>
+        <li>
+          2025年9月7日現在、geminiAPIは1分に5回、1日100回まで無料で使えるようです。
+        </li>
+        <li>
+          openai互換apiを使用して他サービスやローカルllmで動作させることもできます。
+        </li>
+      </div>
+      <div class="modal-footer">
+        <button id="api-setup-info-close-btn" class="modal-button">閉じる</button>
       </div>
     </div>
   </div>

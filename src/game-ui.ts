@@ -42,6 +42,11 @@ export class GameUI {
     private settingsModelContainer: HTMLElement | null = null;
     private settingsApiUrlContainer: HTMLElement | null = null;
 
+    // Audio Setup Info Modal
+    private audioSetupInfoModal: HTMLElement | null = null;
+    private audioSetupInfoButton: HTMLElement | null = null;
+    private audioSetupInfoCloseButton: HTMLElement | null = null;
+
     private isProcessing: boolean = false;
     private isSpeechEnabled: boolean = true;
 
@@ -82,6 +87,11 @@ export class GameUI {
         this.settingsModelContainer = document.querySelector('#settings-model-container');
         this.settingsApiUrlContainer = document.querySelector('#settings-api-url-container');
 
+        // Audio Setup Info Modal elements
+        this.audioSetupInfoModal = document.querySelector('#audio-setup-info-modal');
+        this.audioSetupInfoButton = document.querySelector('#audio-setup-info-btn');
+        this.audioSetupInfoCloseButton = document.querySelector('#audio-setup-info-close-btn');
+
         this.setupEventListeners();
         this.setupSpeechToggle();
     }
@@ -108,6 +118,13 @@ export class GameUI {
         this.settingsCancelButton?.addEventListener('click', () => this.closeSettingsModal());
         this.settingsSaveButton?.addEventListener('click', () => this.saveSettings());
         this.settingsApiTypeSelect?.addEventListener('change', () => this.updateSettingsUI());
+
+        // Audio setup info modal
+        this.audioSetupInfoButton?.addEventListener('click', () => this.openAudioSetupInfoModal());
+        this.audioSetupInfoCloseButton?.addEventListener('click', () => this.closeAudioSetupInfoModal());
+        this.audioSetupInfoModal?.addEventListener('click', (event) => {
+            if (event.target === this.audioSetupInfoModal) this.closeAudioSetupInfoModal();
+        });
     }
 
     private async openSettingsModal(): Promise<void> {
@@ -132,6 +149,18 @@ export class GameUI {
     private closeSettingsModal(): void {
         if (this.settingsModal) {
             this.settingsModal.style.display = 'none';
+        }
+    }
+
+    private openAudioSetupInfoModal(): void {
+        if (this.audioSetupInfoModal) {
+            this.audioSetupInfoModal.style.display = 'flex';
+        }
+    }
+
+    private closeAudioSetupInfoModal(): void {
+        if (this.audioSetupInfoModal) {
+            this.audioSetupInfoModal.style.display = 'none';
         }
     }
 

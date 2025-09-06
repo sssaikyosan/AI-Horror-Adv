@@ -733,3 +733,41 @@ button:focus-visible {
     background: rgba(30, 20, 50, 0.6);
     border-color: rgba(100, 80, 140, 0.5);
 }
+
+.secondary-btn {
+    background: transparent;
+    border: 1px solid rgba(80, 60, 120, 0.5);
+    color: rgba(220, 200, 240, 0.8);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: block;
+    width: 100%;
+    max-width: 300px;
+    margin: 1rem auto;
+    text-align: center;
+}
+
+.secondary-btn:hover {
+    background: rgba(80, 60, 120, 0.2);
+    border-color: rgba(120, 90, 160, 0.7);
+}
+
+#audio-setup-info-modal .modal-body {
+    text-align: left;
+    padding: 0 1rem;
+}
+
+#audio-setup-info-modal .modal-body p,
+#audio-setup-info-modal .modal-body ul,
+#audio-setup-info-modal .modal-body ol {
+    margin-bottom: 1rem;
+}
+
+#audio-setup-info-modal .modal-body code {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-family: 'Courier New', Courier, monospace;
+}

@@ -18,9 +18,8 @@ export class GameUI {
     private choicesContainer: HTMLElement;
     private setupScreen: HTMLElement;
     private gameScreen: HTMLElement;
-    
+
     private loadingIndicator: HTMLElement | null = null;
-    private errorMessage: HTMLElement | null = null;
     private logPanel: HTMLElement | null = null;
     private logContent: HTMLElement | null = null;
 
@@ -42,7 +41,7 @@ export class GameUI {
     private settingsVoiceSelect: HTMLSelectElement | null = null;
     private settingsModelContainer: HTMLElement | null = null;
     private settingsApiUrlContainer: HTMLElement | null = null;
-    
+
     private isProcessing: boolean = false;
     private isSpeechEnabled: boolean = true;
 
@@ -61,7 +60,6 @@ export class GameUI {
         this.setupScreen = document.querySelector('#setup-screen')!;
         this.gameScreen = document.querySelector('#game-screen')!;
         this.loadingIndicator = document.querySelector('#loading-indicator');
-        this.errorMessage = document.querySelector('#error-message');
         this.logPanel = document.querySelector('#log-panel');
         this.logContent = document.querySelector('#log-content');
 
@@ -114,12 +112,12 @@ export class GameUI {
 
     private async openSettingsModal(): Promise<void> {
         if (!this.settingsModal) return;
-        
+
         // Load current settings into the modal
         this.settingsApiTypeSelect!.value = this.currentSettings.apiType;
         this.settingsApiUrlInput!.value = this.currentSettings.apiUrl;
         this.settingsApiKeyInput!.value = this.currentSettings.apiKey;
-        
+
         // Load dynamic options
         await this.loadSpeakersToSettings();
         this.settingsVoiceSelect!.value = this.currentSettings.speakerId.toString();
@@ -204,7 +202,7 @@ export class GameUI {
 
             const tempClient = new GeminiClient(apiKey);
             const models = await tempClient.getAvailableModels();
-            
+
             this.settingsModelSelect!.innerHTML = ''; // Clear existing options
             models.forEach(model => {
                 const option = document.createElement('option');
@@ -283,6 +281,7 @@ export class GameUI {
         this.setProcessingState(true);
         try {
             const { sceneDescription, choices } = await this.gameEngine.startGame();
+            console.log(sceneDescription);
             this.updateDisplay(choices);
         } catch (error) {
             console.error('Error initializing game:', error);

@@ -130,10 +130,10 @@ export class GameEngine {
         // 再プレイの場合は履歴をクリアして新しいゲームを開始
         if (choiceId === 'restart') {
             console.log('GameEngine: 再プレイ処理');
-            const { sceneDescription, choices } = await this.startGame();
+            const result = await this.startGame();
             return {
-                updatedScene: sceneDescription,
-                newChoices: choices
+                updatedScene: result.sceneDescription,
+                newChoices: result.choices
             };
         }
 

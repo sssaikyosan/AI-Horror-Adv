@@ -119,6 +119,15 @@ export class GameEngine {
     }
 
     async makeChoice(choiceId: string): Promise<{ updatedScene: string; newChoices: Choice[] }> {
+        // 再プレイの場合は履歴をクリアして新しいゲームを開始
+        if (choiceId === 'restart') {
+            const { sceneDescription, choices } = await this.startGame();
+            return {
+                updatedScene: sceneDescription,
+                newChoices: choices
+            };
+        }
+
         // 選択されたアクションを履歴に追加
         const choiceAction = this.getChoiceActionText(choiceId);
         this.gameState.history.push(choiceAction);

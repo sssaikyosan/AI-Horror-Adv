@@ -59,6 +59,7 @@
               </div>
             </div>
             <button id="log-toggle" class="log-toggle-btn">ログ表示</button>
+            <button id="settings-toggle-btn" class="log-toggle-btn">設定</button>
           </div>
         </header>
 
@@ -86,10 +87,57 @@
         </div>
 
         <div id="error-message" class="error-message" style="display: none;"></div>
+
+        <!-- Error Modal -->
+        <div id="error-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <p id="error-modal-message"></p>
+                <button id="back-to-title-btn" class="modal-button">タイトルに戻る</button>
+                <button id="error-modal-close-btn" class="modal-button secondary">閉じる</button>
+            </div>
+        </div>
       </div>
     </div>
   </div>
   <script type="module" src="/src/main.ts"></script>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="modal" style="display: none;">
+    <div class="modal-content setup-container">
+      <div class="modal-header">
+        <h2>設定</h2>
+      </div>
+      <div class="form-group">
+        <label for="settings-api-type">API Type:</label>
+        <select id="settings-api-type">
+          <option value="gemini">Gemini</option>
+          <option value="openai">OpenAI Compatible</option>
+        </select>
+      </div>
+      <div class="form-group" id="settings-model-container" style="display: none;">
+        <label for="settings-model-select">Model:</label>
+        <select id="settings-model-select">
+        </select>
+      </div>
+      <div class="form-group" id="settings-api-url-container">
+        <label for="settings-api-url">Endpoint URL:</label>
+        <input type="text" id="settings-api-url">
+      </div>
+      <div class="form-group">
+        <label for="settings-api-key">API Key:</label>
+        <input type="password" id="settings-api-key">
+      </div>
+      <div class="form-group" id="settings-voice-container">
+        <label for="settings-voice-select">読み上げ音声:</label>
+        <select id="settings-voice-select">
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button id="settings-save-btn" class="modal-button">保存</button>
+        <button id="settings-cancel-btn" class="modal-button secondary">キャンセル</button>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>

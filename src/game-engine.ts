@@ -119,29 +119,12 @@ export class GameEngine {
                 message: (error as Error).message,
                 stack: (error as Error).stack
             });
-            // LLMからの取得に失敗した場合のフォールバック
-            this.gameState = {
-                sceneDescription: 'あなたは森の入口に立っている。古い道が奥へと続いている。',
-                history: ['あなたは森の入口に立っている。古い道が奥へと続いている。'],
-                currentStep: 0,
-                gameStatus: 'continue'
-            };
-            this.choices = [
-                { id: 'explore', text: '周囲を探る', description: '不気味な音の正体を探る' },
-                { id: 'flee', text: '逃げる', description: '危険から離れるために走り出す' }
-            ];
-
-            // フォールバックの情景を読み上げ
-            await this.speakText(this.gameState.sceneDescription);
-
-            return {
-                sceneDescription: this.gameState.sceneDescription,
-                choices: this.choices
-            };
+            // エラーを呼び出し元に再スローする
+            throw error;
         }
     }
 
-    async makeChoice(choiceId: string): Promise<{ updatedScene: string; newChoices: Choice[] }> {
+    async makeChoice(choiceId: string): Promise<{ updatedScene: string; newChoices: Choice[]; error?: string }> {
         console.log('GameEngine: 選択肢を処理します', { choiceId });
 
         // 再プレイの場合は履歴をクリアして新しいゲームを開始
@@ -231,19 +214,17 @@ export class GameEngine {
                 message: (error as Error).message,
                 stack: (error as Error).stack
             });
-            this.choices = [
-                { id: 'reload', text: '続ける', description: '何とかしてゲームを続ける。' }
-            ];
-            // エラー時の情景描写も履歴に追加
-            const errorScene = this.gameState.sceneDescription + '\\n\\n[エラーが発生しました。ゲームを続行します。]';
-            this.gameState.history.push(errorScene);
 
-            // エラー時の情景を読み上げ
-            await this.speakText(errorScene);
+            // 選択を履歴から削除
+            this.gameState.history.pop();
+            this.gameState.currentStep--;
+
+            const errorMessage = '通信に失敗しました。APIの設定を確認してもう一度選択してください。';
 
             return {
-                updatedScene: errorScene,
-                newChoices: this.choices
+                updatedScene: this.gameState.sceneDescription, // 直前の情景描写を返す
+                newChoices: this.choices, // 直前の選択肢を返す
+                error: errorMessage
             };
         }
     }
@@ -251,10 +232,7 @@ export class GameEngine {
     private createChoiceContextPrompt(choiceId: string): string {
         const choiceAction = this.getChoiceActionText(choiceId);
         return `プレイヤーが以下のアクションを選択しました：
-\\"${choiceAction}\\"
-
-現在のゲーム状況：
-情景描写: ${this.gameState.sceneDescription}
+\"${choiceAction}\"\r\n\r現在のゲーム状況：\n情景描写: ${this.gameState.sceneDescription}
 
 この選択の結果として、ゲーム続行、ゲームオーバー、ゲームクリアのいずれかを判断してください。その後新しい情景描写を生成し、ゲームステータス及び、ゲームオーバー、ゲームクリアの場合は結果の詳細、ゲーム続行の場合は新しい選択肢を提示してください。レスポンスは必ず以下のJSON形式で返してください：
 ゲーム続行中の場合:
@@ -312,6 +290,16 @@ export class GameEngine {
         };
         // BGMを停止
         this.bgmManager.stop();
+    }
+
+    updateClient(newClient: LMStudioClient | GeminiClient): void {
+        this.client = newClient;
+        console.log('GameEngine client updated');
+    }
+
+    updateSpeaker(speakerId: number): void {
+        this.selectedSpeakerId = speakerId;
+        console.log('GameEngine speaker updated to:', speakerId);
     }
 
     /**

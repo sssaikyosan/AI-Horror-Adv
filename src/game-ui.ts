@@ -1,76 +1,229 @@
 import { GameEngine, type Choice, type GameState } from './game-engine';
+import { GeminiClient } from './gemini-client';
+import { LMStudioClient } from './lmstudio-client';
+import { VoicevoxClient } from './voicevox-client';
+
+// Add a simple type for the settings
+interface GameSettings {
+    apiType: string;
+    apiKey: string;
+    apiUrl: string;
+    model: string;
+    speakerId: number;
+}
 
 export class GameUI {
     private gameEngine: GameEngine;
     private sceneElement: HTMLElement;
     private choicesContainer: HTMLElement;
+    private setupScreen: HTMLElement;
+    private gameScreen: HTMLElement;
     
     private loadingIndicator: HTMLElement | null = null;
     private errorMessage: HTMLElement | null = null;
     private logPanel: HTMLElement | null = null;
     private logContent: HTMLElement | null = null;
+
+    // Error Modal
+    private errorModal: HTMLElement | null = null;
+    private errorModalMessage: HTMLElement | null = null;
+    private backToTitleButton: HTMLElement | null = null;
+    private errorModalCloseButton: HTMLElement | null = null;
+
+    // Settings Modal
+    private settingsModal: HTMLElement | null = null;
+    private settingsToggleButton: HTMLElement | null = null;
+    private settingsSaveButton: HTMLElement | null = null;
+    private settingsCancelButton: HTMLElement | null = null;
+    private settingsApiTypeSelect: HTMLSelectElement | null = null;
+    private settingsApiUrlInput: HTMLInputElement | null = null;
+    private settingsApiKeyInput: HTMLInputElement | null = null;
+    private settingsModelSelect: HTMLSelectElement | null = null;
+    private settingsVoiceSelect: HTMLSelectElement | null = null;
+    private settingsModelContainer: HTMLElement | null = null;
+    private settingsApiUrlContainer: HTMLElement | null = null;
     
     private isProcessing: boolean = false;
-    private isSpeechEnabled: boolean = true; // 読み上げ機能の有効/無効
+    private isSpeechEnabled: boolean = true;
+
+    private currentSettings: GameSettings;
 
     constructor(
         gameEngine: GameEngine,
-        sceneSelector: string = '#scene-description',
-        choicesSelector: string = '#choices-container',
-        loadingSelector: string = '#loading-indicator',
-        errorSelector: string = '#error-message'
+        initialSettings: GameSettings
     ) {
         this.gameEngine = gameEngine;
+        this.currentSettings = initialSettings;
 
-        const scene = document.querySelector(sceneSelector);
-        if (!scene) throw new Error(`Scene element not found: ${sceneSelector}`);
-        this.sceneElement = scene as HTMLElement;
-
-        const choices = document.querySelector(choicesSelector);
-        if (!choices) throw new Error(`Choices container not found: ${choicesSelector}`);
-        this.choicesContainer = choices as HTMLElement;
-
-        const loading = document.querySelector(loadingSelector);
-        if (loading) this.loadingIndicator = loading as HTMLElement;
-
-        const error = document.querySelector(errorSelector);
-        if (error) this.errorMessage = error as HTMLElement;
-
-        // Initialize log panel elements
+        // Main UI elements
+        this.sceneElement = document.querySelector('#scene-description')!;
+        this.choicesContainer = document.querySelector('#choices-container')!;
+        this.setupScreen = document.querySelector('#setup-screen')!;
+        this.gameScreen = document.querySelector('#game-screen')!;
+        this.loadingIndicator = document.querySelector('#loading-indicator');
+        this.errorMessage = document.querySelector('#error-message');
         this.logPanel = document.querySelector('#log-panel');
         this.logContent = document.querySelector('#log-content');
 
-        // 読み上げ機能の設定
-        this.setupSpeechToggle();
+        // Error Modal elements
+        this.errorModal = document.querySelector('#error-modal');
+        this.errorModalMessage = document.querySelector('#error-modal-message');
+        this.backToTitleButton = document.querySelector('#back-to-title-btn');
+        this.errorModalCloseButton = document.querySelector('#error-modal-close-btn');
+
+        // Settings elements
+        this.settingsToggleButton = document.querySelector('#settings-toggle-btn');
+        this.settingsModal = document.querySelector('#settings-modal');
+        this.settingsSaveButton = document.querySelector('#settings-save-btn');
+        this.settingsCancelButton = document.querySelector('#settings-cancel-btn');
+        this.settingsApiTypeSelect = document.querySelector('#settings-api-type');
+        this.settingsApiUrlInput = document.querySelector('#settings-api-url');
+        this.settingsApiKeyInput = document.querySelector('#settings-api-key');
+        this.settingsModelSelect = document.querySelector('#settings-model-select');
+        this.settingsVoiceSelect = document.querySelector('#settings-voice-select');
+        this.settingsModelContainer = document.querySelector('#settings-model-container');
+        this.settingsApiUrlContainer = document.querySelector('#settings-api-url-container');
 
         this.setupEventListeners();
+        this.setupSpeechToggle();
     }
 
     private setupEventListeners(): void {
-        // Setup log toggle button
-        const logToggleBtn = document.querySelector('#log-toggle');
-        if (logToggleBtn) {
-            logToggleBtn.addEventListener('click', () => this.toggleLogPanel());
+        // Log panel
+        document.querySelector('#log-toggle')?.addEventListener('click', () => this.toggleLogPanel());
+        document.querySelector('#log-close')?.addEventListener('click', () => this.hideLogPanel());
+
+        // Error modal
+        this.backToTitleButton?.addEventListener('click', () => {
+            this.hideErrorPopup();
+            this.gameScreen.style.display = 'none';
+            this.setupScreen.style.display = 'flex';
+            this.resetGame();
+        });
+        this.errorModalCloseButton?.addEventListener('click', () => this.hideErrorPopup());
+        this.errorModal?.addEventListener('click', (event) => {
+            if (event.target === this.errorModal) this.hideErrorPopup();
+        });
+
+        // Settings modal
+        this.settingsToggleButton?.addEventListener('click', () => this.openSettingsModal());
+        this.settingsCancelButton?.addEventListener('click', () => this.closeSettingsModal());
+        this.settingsSaveButton?.addEventListener('click', () => this.saveSettings());
+        this.settingsApiTypeSelect?.addEventListener('change', () => this.updateSettingsUI());
+    }
+
+    private async openSettingsModal(): Promise<void> {
+        if (!this.settingsModal) return;
+        
+        // Load current settings into the modal
+        this.settingsApiTypeSelect!.value = this.currentSettings.apiType;
+        this.settingsApiUrlInput!.value = this.currentSettings.apiUrl;
+        this.settingsApiKeyInput!.value = this.currentSettings.apiKey;
+        
+        // Load dynamic options
+        await this.loadSpeakersToSettings();
+        this.settingsVoiceSelect!.value = this.currentSettings.speakerId.toString();
+
+        await this.loadGeminiModelsToSettings();
+        this.settingsModelSelect!.value = this.currentSettings.model;
+
+        this.updateSettingsUI();
+        this.settingsModal.style.display = 'flex';
+    }
+
+    private closeSettingsModal(): void {
+        if (this.settingsModal) {
+            this.settingsModal.style.display = 'none';
+        }
+    }
+
+    private saveSettings(): void {
+        const newSettings: GameSettings = {
+            apiType: this.settingsApiTypeSelect!.value,
+            apiKey: this.settingsApiKeyInput!.value,
+            apiUrl: this.settingsApiUrlInput!.value,
+            model: this.settingsModelSelect!.value,
+            speakerId: parseInt(this.settingsVoiceSelect!.value, 10)
+        };
+
+        // Update current settings
+        this.currentSettings = newSettings;
+
+        // Create a new client based on the new settings
+        let newClient: LMStudioClient | GeminiClient;
+        if (newSettings.apiType === 'gemini') {
+            if (!newSettings.apiKey) {
+                this.showErrorPopup("Gemini APIキーが必要です。", 'transient');
+                return;
+            }
+            newClient = new GeminiClient(newSettings.apiKey, newSettings.model);
+        } else {
+            newClient = new LMStudioClient(newSettings.apiUrl, 'default', newSettings.apiKey);
         }
 
-        // Setup log close button
-        const logCloseBtn = document.querySelector('#log-close');
-        if (logCloseBtn) {
-            logCloseBtn.addEventListener('click', () => this.hideLogPanel());
+        // Update the game engine with the new client and speaker
+        this.gameEngine.updateClient(newClient);
+        this.gameEngine.updateSpeaker(newSettings.speakerId);
+
+        this.closeSettingsModal();
+    }
+
+    private updateSettingsUI(): void {
+        if (this.settingsApiTypeSelect?.value === 'gemini') {
+            this.settingsApiUrlContainer!.style.display = 'none';
+            this.settingsModelContainer!.style.display = 'block';
+        } else {
+            this.settingsApiUrlContainer!.style.display = 'block';
+            this.settingsModelContainer!.style.display = 'none';
+        }
+    }
+
+    private async loadSpeakersToSettings(): Promise<void> {
+        try {
+            const voiceClient = new VoicevoxClient();
+            const isAvailable = await voiceClient.isServerAvailable();
+            if (!isAvailable) return;
+
+            const speakers = await voiceClient.getAvailableSpeakers();
+            this.settingsVoiceSelect!.innerHTML = ''; // Clear existing options
+            speakers.forEach((speaker) => {
+                const option = document.createElement('option');
+                option.value = speaker.id.toString();
+                option.textContent = speaker.name;
+                this.settingsVoiceSelect!.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error loading speakers for settings:', error);
+        }
+    }
+
+    private async loadGeminiModelsToSettings(): Promise<void> {
+        try {
+            const apiKey = this.settingsApiKeyInput!.value;
+            if (!apiKey) return;
+
+            const tempClient = new GeminiClient(apiKey);
+            const models = await tempClient.getAvailableModels();
+            
+            this.settingsModelSelect!.innerHTML = ''; // Clear existing options
+            models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model;
+                option.textContent = model;
+                this.settingsModelSelect!.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error loading Gemini models for settings:', error);
         }
     }
 
     private setupSpeechToggle(): void {
         const speechToggle = document.querySelector('#speech-toggle');
         if (speechToggle) {
-            // 初期状態の設定
             this.updateSpeechSwitchState(speechToggle);
-            
             speechToggle.addEventListener('click', () => {
                 this.isSpeechEnabled = !this.isSpeechEnabled;
                 this.updateSpeechSwitchState(speechToggle);
-                
-                // ユーザーに設定変更を通知
                 console.log(`読み上げ機能が${this.isSpeechEnabled ? '有効' : '無効'}になりました`);
             });
         }
@@ -87,11 +240,8 @@ export class GameUI {
     private toggleLogPanel(): void {
         if (this.logPanel) {
             const isVisible = this.logPanel.style.display === 'flex';
-            if (isVisible) {
-                this.hideLogPanel();
-            } else {
-                this.showLogPanel();
-            }
+            if (isVisible) this.hideLogPanel();
+            else this.showLogPanel();
         }
     }
 
@@ -111,31 +261,19 @@ export class GameUI {
     private updateLogContent(): void {
         if (this.logContent) {
             const gameState = this.gameEngine.getGameState();
-            const history = [...gameState.history]; // Create a copy of the history array
-            
-            // Clear existing content
             this.logContent.innerHTML = '';
-            
-            // Add each history entry to the log
-            history.forEach((entry, index) => {
+            gameState.history.forEach((entry, index) => {
                 const logEntry = document.createElement('div');
                 logEntry.className = 'log-entry';
-                
-                // Determine if this is a scene description or a choice
                 if (index % 2 === 0) {
-                    // Even indices are choices (0, 2, 4, ...)
                     logEntry.classList.add('choice');
                     logEntry.textContent = entry;
                 } else {
-                    // Odd indices are scene descriptions (1, 3, 5, ...)
                     logEntry.classList.add('scene');
                     logEntry.textContent = `▶ ${entry}`;
                 }
-                
                 this.logContent!.appendChild(logEntry);
             });
-            
-            // Scroll to the bottom of the log
             this.logContent.scrollTop = this.logContent.scrollHeight;
         }
     }
@@ -145,16 +283,10 @@ export class GameUI {
         this.setProcessingState(true);
         try {
             const { sceneDescription, choices } = await this.gameEngine.startGame();
-            console.log('GameUI: ゲーム初期化完了', { sceneDescription, choices });
             this.updateDisplay(choices);
         } catch (error) {
             console.error('Error initializing game:', error);
-            console.error('Error initializing game details:', {
-                name: (error as Error).name,
-                message: (error as Error).message,
-                stack: (error as Error).stack
-            });
-            this.showError(error instanceof Error ? error.message : 'Failed to initialize game');
+            this.showErrorPopup(error instanceof Error ? error.message : 'ゲームの初期化に失敗しました。設定を確認してもう一度お試しください。', 'fatal');
         } finally {
             this.setProcessingState(false);
         }
@@ -162,63 +294,45 @@ export class GameUI {
 
     private updateDisplay(choices: Choice[]): void {
         const gameState = this.gameEngine.getGameState();
-
-        // ゲームオーバーやゲームクリアの場合、descriptionも表示する
         if (gameState.gameStatus === 'gameover' || gameState.gameStatus === 'gameclear') {
             const description = gameState.gameResultDescription || '';
             this.sceneElement.innerHTML = `<p>${gameState.sceneDescription}</p><p><strong>${description}</strong></p>`;
         } else {
             this.sceneElement.textContent = gameState.sceneDescription;
         }
-
         this.displayChoices(choices);
     }
 
     private displayChoices(choices: Choice[]): void {
         this.choicesContainer.innerHTML = '';
-
         choices.forEach((choice, index) => {
             const choiceButton = document.createElement('button');
             choiceButton.className = 'choice-button';
             choiceButton.dataset.choiceId = choice.id;
-
-            choiceButton.innerHTML = `
-        <div class="choice-title">${choice.text}</div>
-        <div class="choice-description">${choice.description}</div>
-      `;
-
+            choiceButton.innerHTML = `<div class="choice-title">${choice.text}</div><div class="choice-description">${choice.description}</div>`;
             choiceButton.addEventListener('click', () => this.handleChoiceClick(choice.id));
-
-            // アニメーションのための遅延追加
             setTimeout(() => {
                 choiceButton.style.animationDelay = `${index * 0.1}s`;
                 choiceButton.classList.add('animate-in');
             }, 10);
-
             this.choicesContainer.appendChild(choiceButton);
         });
     }
 
     private async handleChoiceClick(choiceId: string): Promise<void> {
-        console.log('GameUI: 選択肢がクリックされました', { choiceId });
-        if (this.isProcessing) {
-            console.log('GameUI: 処理中のため選択肢を無視します');
-            return;
-        }
-
+        if (this.isProcessing) return;
         this.setProcessingState(true);
-
         try {
             const result = await this.gameEngine.makeChoice(choiceId);
-            console.log('GameUI: 選択肢処理完了', result);
-
-            await this.animateSceneUpdate(result.updatedScene);
-
-            this.updateDisplay(result.newChoices);
-
+            if (result.error) {
+                this.showErrorPopup(result.error, 'transient');
+            } else {
+                await this.animateSceneUpdate(result.updatedScene);
+                this.updateDisplay(result.newChoices);
+            }
         } catch (error) {
             console.error('Error processing choice:', error);
-            this.showError(error instanceof Error ? error.message : '選択肢の処理に失敗しました');
+            this.showErrorPopup(error instanceof Error ? error.message : '選択肢の処理に失敗しました', 'transient');
         } finally {
             this.setProcessingState(false);
         }
@@ -226,19 +340,12 @@ export class GameUI {
 
     private async animateSceneUpdate(newScene: string): Promise<void> {
         return new Promise((resolve) => {
-            // フェードアウト
             this.sceneElement.style.transition = 'opacity 0.3s ease-out';
             this.sceneElement.style.opacity = '0';
-
             setTimeout(() => {
-                // テキスト更新
                 this.sceneElement.textContent = newScene;
-
-                // フェードイン
                 this.sceneElement.style.transition = 'opacity 0.5s ease-in';
                 this.sceneElement.style.opacity = '1';
-
-                // 少し待ってから解決
                 setTimeout(resolve, 500);
             }, 300);
         });
@@ -246,29 +353,34 @@ export class GameUI {
 
     private setProcessingState(isProcessing: boolean): void {
         this.isProcessing = isProcessing;
-
-        // 選択肢ボタンの有効/無効化
         const choiceButtons = this.choicesContainer.querySelectorAll('.choice-button');
         choiceButtons.forEach(button => {
             (button as HTMLButtonElement).disabled = isProcessing;
         });
-
-        // ローディングインジケータの表示/非表示
         if (this.loadingIndicator) {
             this.loadingIndicator.style.display = isProcessing ? 'flex' : 'none';
         }
     }
 
-    private showError(message: string): void {
-        if (this.errorMessage) {
-            this.errorMessage.textContent = message;
-            this.errorMessage.style.display = 'block';
+    private showErrorPopup(message: string, type: 'fatal' | 'transient' = 'transient'): void {
+        if (this.errorModal && this.errorModalMessage && this.backToTitleButton && this.errorModalCloseButton) {
+            this.errorModalMessage.textContent = message;
 
-            setTimeout(() => {
-                if (this.errorMessage) {
-                    this.errorMessage.style.display = 'none';
-                }
-            }, 5000);
+            if (type === 'fatal') {
+                this.backToTitleButton.style.display = 'inline-block';
+                this.errorModalCloseButton.style.display = 'none';
+            } else {
+                this.backToTitleButton.style.display = 'none';
+                this.errorModalCloseButton.style.display = 'inline-block';
+            }
+
+            this.errorModal.style.display = 'flex';
+        }
+    }
+
+    private hideErrorPopup(): void {
+        if (this.errorModal) {
+            this.errorModal.style.display = 'none';
         }
     }
 
@@ -276,7 +388,6 @@ export class GameUI {
         this.gameEngine.resetGame();
         this.sceneElement.textContent = '';
         this.choicesContainer.innerHTML = '';
-        
     }
 
     public getGameState(): GameState {

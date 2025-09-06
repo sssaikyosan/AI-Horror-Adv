@@ -37,6 +37,12 @@ export class GeminiClient {
         return this.model;
     }
 
+    updateConfig(apiKey: string, model: string): void {
+        this.apiKey = apiKey;
+        this.model = model;
+        console.log('GeminiClient config updated', { apiKey, model });
+    }
+
     private transformMessagesToGemini(messages: LMStudioMessage[]): GeminiContent[] {
         // Gemini doesn't have a 'system' role. We'll prepend the system prompt to the first user message.
         let systemPrompt = '';

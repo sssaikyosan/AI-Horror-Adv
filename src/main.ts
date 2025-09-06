@@ -178,14 +178,16 @@ startButton.addEventListener('click', async () => {
   // Initialize game engine
   const gameEngine = new GameEngine(client as any, selectedSpeakerId); // Type assertion to avoid TS errors
 
+  const initialSettings = {
+    apiType: apiType,
+    apiKey: apiKey,
+    apiUrl: apiUrl,
+    model: selectedModel,
+    speakerId: selectedSpeakerId
+  };
+
   // Initialize game UI
-  const gameUI = new GameUI(
-    gameEngine,
-    '#scene-description',
-    '#choices-container',
-    '#loading-indicator',
-    '#error-message'
-  );
+  const gameUI = new GameUI(gameEngine, initialSettings);
 
   // Switch screens
   setupScreen.style.display = 'none';

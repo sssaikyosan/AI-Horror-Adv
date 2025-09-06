@@ -52,6 +52,12 @@ export class LMStudioClient {
         this.apiKey = apiKey;
     }
 
+    updateConfig(baseUrl: string, apiKey?: string): void {
+        this.baseUrl = baseUrl;
+        this.apiKey = apiKey;
+        console.log('LMStudioClient config updated', { baseUrl, apiKey });
+    }
+
     private getHeaders(): Record<string, string> {
         const headers: Record<string, string> = {
             'Content-Type': 'application/json',

@@ -128,7 +128,13 @@ export class GameUI {
     private updateDisplay(choices: Choice[]): void {
         const gameState = this.gameEngine.getGameState();
 
-        this.sceneElement.textContent = gameState.sceneDescription;
+        // ゲームオーバーやゲームクリアの場合、descriptionも表示する
+        if (gameState.gameStatus === 'gameover' || gameState.gameStatus === 'gameclear') {
+            const description = gameState.gameResultDescription || '';
+            this.sceneElement.innerHTML = `<p>${gameState.sceneDescription}</p><p><strong>${description}</strong></p>`;
+        } else {
+            this.sceneElement.textContent = gameState.sceneDescription;
+        }
 
         this.displayChoices(choices);
     }

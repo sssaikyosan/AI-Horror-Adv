@@ -1,5 +1,6 @@
 import { LMStudioClient, type LMStudioMessage } from './lmstudio-client';
 import { GeminiClient } from './gemini-client';
+import { BGMManager } from './bgm-manager';
 
 export type GameStatus = 'continue' | 'gameover' | 'gameclear';
 
@@ -22,6 +23,7 @@ export class GameEngine {
     private gameState: GameState;
     private systemPrompt: string;
     private choices: Choice[] = [];
+    private bgmManager: BGMManager;
 
     constructor(client: LMStudioClient | GeminiClient) {
         this.client = client;
@@ -31,6 +33,7 @@ export class GameEngine {
             currentStep: 0,
             gameStatus: 'continue'
         };
+        this.bgmManager = new BGMManager();
 
         this.systemPrompt = `あなたはホラーゲームのゲームマスターです。
 以下のルールに従って不気味で恐怖を煽るゲームを進行してください：
@@ -74,6 +77,8 @@ export class GameEngine {
 
     async startGame(): Promise<{ sceneDescription: string; choices: Choice[] }> {
         this.resetGame();
+        // BGMを再生
+        this.bgmManager.play();
         try {
             const initialScenarioJson = await this.client.generateInitialScenario();
             console.log(initialScenarioJson);
@@ -174,11 +179,15 @@ export class GameEngine {
                 this.choices = [
                     { id: 'restart', text: '最初からやり直す', description: 'ゲームを最初からやり直します' }
                 ];
+                // BGMを停止
+                this.bgmManager.stop();
             } else if (this.gameState.gameStatus === 'gameclear') {
                 this.gameState.gameResultDescription = parsedResponse.description || '';
                 this.choices = [
                     { id: 'restart', text: 'もう一度プレイする', description: 'ゲームをもう一度プレイします' }
                 ];
+                // BGMを停止
+                this.bgmManager.stop();
             } else {
                 this.choices = parsedResponse.choices || [];
             }
@@ -266,5 +275,7 @@ export class GameEngine {
             currentStep: 0,
             gameStatus: 'continue'
         };
+        // BGMを停止
+        this.bgmManager.stop();
     }
 }

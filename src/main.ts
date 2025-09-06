@@ -117,10 +117,10 @@ async function loadSpeakers() {
       const option = document.createElement('option');
       option.value = speaker.id.toString();
       option.textContent = speaker.name;
-      // Select speaker ID 84 as default if it exists, otherwise select the first speaker
-      if (speaker.id === 84) {
+      // Select speaker ID 38 as default if it exists, otherwise select the first speaker
+      if (speaker.id === 38) {
         option.selected = true;
-      } else if (index === 0 && !speakers.some(s => s.id === 84)) {
+      } else if (index === 0 && !speakers.some(s => s.id === 38)) {
         option.selected = true;
       }
       voiceSelect.appendChild(option);

@@ -11,6 +11,7 @@ export interface GameState {
     currentStep: number;
     gameStatus: GameStatus;
     gameResultDescription?: string; // ゲームオーバーやゲームクリア時の説明文
+    choices?: Choice[]; // 選択肢を保持
 }
 
 export interface Choice {
@@ -34,7 +35,8 @@ export class GameEngine {
             sceneDescription: '',
             history: [],
             currentStep: 0,
-            gameStatus: 'continue'
+            gameStatus: 'continue',
+            choices: [] // 初期化
         };
         this.bgmManager = new BGMManager();
         this.voicevoxClient = new VoicevoxClient();
@@ -99,7 +101,8 @@ export class GameEngine {
                 sceneDescription: initialScenario.sceneDescription,
                 history: [initialScenario.sceneDescription],
                 currentStep: 0,
-                gameStatus: 'continue'
+                gameStatus: 'continue',
+                choices: initialScenario.choices || []
             };
 
             this.choices = initialScenario.choices || [];
@@ -200,6 +203,9 @@ export class GameEngine {
             // 新しい情景描写を履歴に追加
             this.gameState.history.push(this.gameState.sceneDescription);
 
+            // gameStateに選択肢を保存
+            this.gameState.choices = this.choices;
+
             // 新しい情景を読み上げ
             await this.speakText(this.gameState.sceneDescription);
 
@@ -286,10 +292,13 @@ export class GameEngine {
             sceneDescription: '',
             history: [],
             currentStep: 0,
-            gameStatus: 'continue'
+            gameStatus: 'continue',
+            choices: []
         };
         // BGMを停止
         this.bgmManager.stop();
+        // ローカルストレージからも削除
+        localStorage.removeItem('aiHorrorGameState');
     }
 
     updateClient(newClient: LMStudioClient | GeminiClient): void {
@@ -329,5 +338,69 @@ export class GameEngine {
                 stack: (error as Error).stack
             });
         }
+    }
+
+    /**
+     * 現在の選択肢を取得します
+     */
+    getChoices(): Choice[] {
+        return this.choices;
+    }
+
+    /**
+     * 現在のゲーム状態をローカルストレージに保存します
+     */
+    saveGame(): void {
+        try {
+            const gameStateToSave = {
+                ...this.gameState,
+                // 必要に応じて追加の状態をここに保存
+            };
+            localStorage.setItem('aiHorrorGameState', JSON.stringify(gameStateToSave));
+            console.log('ゲーム状態を保存しました');
+        } catch (error) {
+            console.error('ゲーム状態の保存に失敗しました:', error);
+        }
+    }
+
+    /**
+     * ローカルストレージからゲーム状態を読み込みます
+     */
+    loadGame(): GameState | null {
+        try {
+            const savedState = localStorage.getItem('aiHorrorGameState');
+            if (savedState) {
+                const parsedState = JSON.parse(savedState);
+                // 型チェックを行う（必要に応じて）
+                if (this.isValidGameState(parsedState)) {
+                    this.gameState = parsedState;
+                    console.log('ゲーム状態を読み込みました');
+                    return this.gameState;
+                } else {
+                    console.warn('保存されたゲーム状態の形式が無効です');
+                    return null;
+                }
+            }
+            console.log('保存されたゲーム状態が見つかりません');
+            return null;
+        } catch (error) {
+            console.error('ゲーム状態の読み込みに失敗しました:', error);
+            return null;
+        }
+    }
+
+    /**
+     * ロードされたゲーム状態が有効かどうかを確認します
+     * @param state 検証するゲーム状態
+     */
+    private isValidGameState(state: any): state is GameState {
+        return (
+            typeof state === 'object' &&
+            state !== null &&
+            typeof state.sceneDescription === 'string' &&
+            Array.isArray(state.history) &&
+            typeof state.currentStep === 'number' &&
+            (state.gameStatus === 'continue' || state.gameStatus === 'gameover' || state.gameStatus === 'gameclear')
+        );
     }
 }

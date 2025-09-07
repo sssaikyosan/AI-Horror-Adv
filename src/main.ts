@@ -8,6 +8,8 @@ import { VoicevoxClient } from './voicevox-client'
 const setupScreen = document.getElementById('setup-screen') as HTMLElement;
 const gameScreen = document.getElementById('game-screen') as HTMLElement;
 const startButton = document.getElementById('start-game-btn') as HTMLButtonElement;
+const loadButton = document.getElementById('load-game-btn') as HTMLButtonElement;
+const saveAndQuitButton = document.getElementById('save-and-quit-btn') as HTMLButtonElement;
 const apiUrlInput = document.getElementById('api-url') as HTMLInputElement;
 const apiKeyInput = document.getElementById('api-key') as HTMLInputElement;
 const apiTypeSelect = document.getElementById('api-type') as HTMLSelectElement;
@@ -16,10 +18,14 @@ const modelSelect = document.getElementById('model-select') as HTMLSelectElement
 const apiUrlContainer = document.getElementById('api-url-container') as HTMLElement;
 const voiceSelect = document.getElementById('voice-select') as HTMLSelectElement;
 
+let gameEngine: GameEngine;
+let gameUI: GameUI;
+
 // Set initial state based on default selection
 updateUIForAPIType('gemini');
 loadGeminiModels();
 loadSpeakers();
+toggleLoadButton(); // ロードボタンの表示/非表示を切り替える
 
 apiTypeSelect.addEventListener('change', () => {
   updateUIForAPIType(apiTypeSelect.value);
@@ -196,6 +202,14 @@ function updateUIForAPIType(apiType: string) {
   }
 }
 
+function toggleLoadButton() {
+  if (localStorage.getItem('aiHorrorGameState')) {
+    loadButton.style.display = 'block';
+  } else {
+    loadButton.style.display = 'none';
+  }
+}
+
 startButton.addEventListener('click', async () => {
   const apiUrl = apiUrlInput.value;
   const apiKey = apiKeyInput.value;
@@ -218,7 +232,7 @@ startButton.addEventListener('click', async () => {
   }
 
   // Initialize game engine
-  const gameEngine = new GameEngine(client as any, selectedSpeakerId); // Type assertion to avoid TS errors
+  gameEngine = new GameEngine(client as any, selectedSpeakerId); // Type assertion to avoid TS errors
 
   const initialSettings = {
     apiType: apiType,
@@ -229,7 +243,7 @@ startButton.addEventListener('click', async () => {
   };
 
   // Initialize game UI
-  const gameUI = new GameUI(gameEngine, initialSettings);
+  gameUI = new GameUI(gameEngine, initialSettings);
 
   // Switch screens
   setupScreen.style.display = 'none';
@@ -246,5 +260,63 @@ startButton.addEventListener('click', async () => {
     if (sceneElement) {
       sceneElement.textContent = 'ゲームの初期化に失敗しました。APIの設定を確認してください。';
     }
+  }
+});
+
+loadButton.addEventListener('click', async () => {
+  if (!gameEngine) {
+    const apiUrl = apiUrlInput.value;
+    const apiKey = apiKeyInput.value;
+    const apiType = apiTypeSelect.value;
+    const selectedModel = modelSelect.value;
+    const selectedSpeakerId = parseInt(voiceSelect.value, 10) || 0;
+
+    let client: LMStudioClient | GeminiClient;
+
+    if (apiType === 'gemini') {
+      if (!apiKey) {
+        alert('Gemini API requires an API key');
+        return;
+      }
+      client = new GeminiClient(apiKey, selectedModel);
+    } else {
+      client = new LMStudioClient(apiUrl, 'default', apiKey);
+    }
+
+    gameEngine = new GameEngine(client as any, selectedSpeakerId);
+    
+    const initialSettings = {
+      apiType: apiType,
+      apiKey: apiKey,
+      apiUrl: apiUrl,
+      model: selectedModel,
+      speakerId: selectedSpeakerId
+    };
+    
+    gameUI = new GameUI(gameEngine, initialSettings);
+  }
+
+  const loadedState = gameEngine.loadGame();
+  if (loadedState) {
+    setupScreen.style.display = 'none';
+    gameScreen.style.display = 'flex';
+    
+    // ゲームUIを更新
+    gameUI.updateDisplayFromState(loadedState);
+    
+    // 情景描写を読み上げ
+    await gameEngine.speakText(loadedState.sceneDescription);
+  } else {
+    alert('セーブデータが見つかりませんでした。');
+  }
+});
+
+saveAndQuitButton.addEventListener('click', () => {
+  if (gameEngine) {
+    gameEngine.saveGame();
+    gameScreen.style.display = 'none';
+    setupScreen.style.display = 'flex';
+    // ロードボタンの表示を更新
+    toggleLoadButton();
   }
 });

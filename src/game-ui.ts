@@ -64,6 +64,8 @@ export class GameUI {
         this.choicesContainer = document.querySelector('#choices-container')!;
         this.setupScreen = document.querySelector('#setup-screen')!;
         this.gameScreen = document.querySelector('#game-screen')!;
+
+        // Optional UI elements
         this.loadingIndicator = document.querySelector('#loading-indicator');
         this.logPanel = document.querySelector('#log-panel');
         this.logContent = document.querySelector('#log-content');
@@ -79,11 +81,11 @@ export class GameUI {
         this.settingsModal = document.querySelector('#settings-modal');
         this.settingsSaveButton = document.querySelector('#settings-save-btn');
         this.settingsCancelButton = document.querySelector('#settings-cancel-btn');
-        this.settingsApiTypeSelect = document.querySelector('#settings-api-type');
-        this.settingsApiUrlInput = document.querySelector('#settings-api-url');
-        this.settingsApiKeyInput = document.querySelector('#settings-api-key');
-        this.settingsModelSelect = document.querySelector('#settings-model-select');
-        this.settingsVoiceSelect = document.querySelector('#settings-voice-select');
+        this.settingsApiTypeSelect = document.querySelector('#settings-api-type') as HTMLSelectElement | null;
+        this.settingsApiUrlInput = document.querySelector('#settings-api-url') as HTMLInputElement | null;
+        this.settingsApiKeyInput = document.querySelector('#settings-api-key') as HTMLInputElement | null;
+        this.settingsModelSelect = document.querySelector('#settings-model-select') as HTMLSelectElement | null;
+        this.settingsVoiceSelect = document.querySelector('#settings-voice-select') as HTMLSelectElement | null;
         this.settingsModelContainer = document.querySelector('#settings-model-container');
         this.settingsApiUrlContainer = document.querySelector('#settings-api-url-container');
 
@@ -131,16 +133,16 @@ export class GameUI {
         if (!this.settingsModal) return;
 
         // Load current settings into the modal
-        this.settingsApiTypeSelect!.value = this.currentSettings.apiType;
-        this.settingsApiUrlInput!.value = this.currentSettings.apiUrl;
-        this.settingsApiKeyInput!.value = this.currentSettings.apiKey;
+        if (this.settingsApiTypeSelect) this.settingsApiTypeSelect.value = this.currentSettings.apiType;
+        if (this.settingsApiUrlInput) this.settingsApiUrlInput.value = this.currentSettings.apiUrl;
+        if (this.settingsApiKeyInput) this.settingsApiKeyInput.value = this.currentSettings.apiKey;
 
         // Load dynamic options
         await this.loadSpeakersToSettings();
-        this.settingsVoiceSelect!.value = this.currentSettings.speakerId.toString();
+        if (this.settingsVoiceSelect) this.settingsVoiceSelect.value = this.currentSettings.speakerId.toString();
 
         await this.loadGeminiModelsToSettings();
-        this.settingsModelSelect!.value = this.currentSettings.model;
+        if (this.settingsModelSelect) this.settingsModelSelect.value = this.currentSettings.model;
 
         this.updateSettingsUI();
         this.settingsModal.style.display = 'flex';
@@ -165,12 +167,15 @@ export class GameUI {
     }
 
     private saveSettings(): void {
+        if (!this.settingsApiTypeSelect || !this.settingsApiKeyInput || !this.settingsApiUrlInput || 
+            !this.settingsModelSelect || !this.settingsVoiceSelect) return;
+
         const newSettings: GameSettings = {
-            apiType: this.settingsApiTypeSelect!.value,
-            apiKey: this.settingsApiKeyInput!.value,
-            apiUrl: this.settingsApiUrlInput!.value,
-            model: this.settingsModelSelect!.value,
-            speakerId: parseInt(this.settingsVoiceSelect!.value, 10)
+            apiType: this.settingsApiTypeSelect.value,
+            apiKey: this.settingsApiKeyInput.value,
+            apiUrl: this.settingsApiUrlInput.value,
+            model: this.settingsModelSelect.value,
+            speakerId: parseInt(this.settingsVoiceSelect.value, 10)
         };
 
         // Update current settings
@@ -196,23 +201,27 @@ export class GameUI {
     }
 
     private updateSettingsUI(): void {
-        if (this.settingsApiTypeSelect?.value === 'gemini') {
-            this.settingsApiUrlContainer!.style.display = 'none';
-            this.settingsModelContainer!.style.display = 'block';
+        if (!this.settingsApiTypeSelect || !this.settingsApiUrlContainer || !this.settingsModelContainer) return;
+        
+        if (this.settingsApiTypeSelect.value === 'gemini') {
+            this.settingsApiUrlContainer.style.display = 'none';
+            this.settingsModelContainer.style.display = 'block';
         } else {
-            this.settingsApiUrlContainer!.style.display = 'block';
-            this.settingsModelContainer!.style.display = 'none';
+            this.settingsApiUrlContainer.style.display = 'block';
+            this.settingsModelContainer.style.display = 'none';
         }
     }
 
     private async loadSpeakersToSettings(): Promise<void> {
+        if (!this.settingsVoiceSelect) return;
+        
         try {
             const voiceClient = new VoicevoxClient();
             const isAvailable = await voiceClient.isServerAvailable();
             if (!isAvailable) return;
 
             const speakers = await voiceClient.getAvailableSpeakers();
-            this.settingsVoiceSelect!.innerHTML = ''; // Clear existing options
+            this.settingsVoiceSelect.innerHTML = ''; // Clear existing options
             speakers.forEach((speaker) => {
                 const option = document.createElement('option');
                 option.value = speaker.id.toString();
@@ -225,14 +234,16 @@ export class GameUI {
     }
 
     private async loadGeminiModelsToSettings(): Promise<void> {
+        if (!this.settingsApiKeyInput || !this.settingsModelSelect) return;
+        
         try {
-            const apiKey = this.settingsApiKeyInput!.value;
+            const apiKey = this.settingsApiKeyInput.value;
             if (!apiKey) return;
 
             const tempClient = new GeminiClient(apiKey);
             const models = await tempClient.getAvailableModels();
 
-            this.settingsModelSelect!.innerHTML = ''; // Clear existing options
+            this.settingsModelSelect.innerHTML = ''; // Clear existing options
             models.forEach(model => {
                 const option = document.createElement('option');
                 option.value = model;
@@ -331,8 +342,51 @@ export class GameUI {
         this.displayChoices(choices);
     }
 
+    public updateDisplayFromState(gameState: GameState): void {
+        if (gameState.gameStatus === 'gameover' || gameState.gameStatus === 'gameclear') {
+            const description = gameState.gameResultDescription || '';
+            this.sceneElement.innerHTML = `<p>${gameState.sceneDescription}</p><p><strong>${description}</strong></p>`;
+        } else {
+            this.sceneElement.textContent = gameState.sceneDescription;
+        }
+        
+        // 選択肢を表示
+        this.displayChoicesFromState(gameState);
+    }
+
     private displayChoices(choices: Choice[]): void {
         this.choicesContainer.innerHTML = '';
+        choices.forEach((choice, index) => {
+            const choiceButton = document.createElement('button');
+            choiceButton.className = 'choice-button';
+            choiceButton.dataset.choiceId = choice.id;
+            choiceButton.innerHTML = `<div class="choice-title">${choice.text}</div><div class="choice-description">${choice.description}</div>`;
+            choiceButton.addEventListener('click', () => this.handleChoiceClick(choice.id));
+            setTimeout(() => {
+                choiceButton.style.animationDelay = `${index * 0.1}s`;
+                choiceButton.classList.add('animate-in');
+            }, 10);
+            this.choicesContainer.appendChild(choiceButton);
+        });
+    }
+
+    private displayChoicesFromState(gameState: GameState): void {
+        this.choicesContainer.innerHTML = '';
+        
+        // ゲームが終了している場合は再開の選択肢を表示
+        if (gameState.gameStatus === 'gameover' || gameState.gameStatus === 'gameclear') {
+            const restartChoice = { id: 'restart', text: '最初からやり直す', description: 'ゲームを最初からやり直します' };
+            const choiceButton = document.createElement('button');
+            choiceButton.className = 'choice-button';
+            choiceButton.dataset.choiceId = restartChoice.id;
+            choiceButton.innerHTML = `<div class="choice-title">${restartChoice.text}</div><div class="choice-description">${restartChoice.description}</div>`;
+            choiceButton.addEventListener('click', () => this.handleChoiceClick(restartChoice.id));
+            this.choicesContainer.appendChild(choiceButton);
+            return;
+        }
+        
+        // gameStateから選択肢を取得
+        const choices = gameState.choices || [];
         choices.forEach((choice, index) => {
             const choiceButton = document.createElement('button');
             choiceButton.className = 'choice-button';

@@ -1,5 +1,6 @@
 export class VoicevoxClient {
     private baseUrl: string;
+    private currentAudio: HTMLAudioElement | null = null;
 
     constructor(baseUrl: string = 'http://localhost:50021') {
         this.baseUrl = baseUrl;
@@ -112,60 +113,79 @@ export class VoicevoxClient {
                 return false;
             }
 
+            // 既存の音声再生を停止
+            if (this.currentAudio) {
+                this.currentAudio.pause();
+                if (this.currentAudio.src) {
+                    URL.revokeObjectURL(this.currentAudio.src);
+                }
+                this.currentAudio = null;
+            }
+
             // 音声を再生
             const audioUrl = URL.createObjectURL(audioBlob);
             console.log('Voicevoxクライアント: 音声URLを作成しました', { audioUrl });
 
-            const audio = new Audio(audioUrl);
+            this.currentAudio = new Audio(audioUrl);
 
             // 音声再生完了後にURLを解放
-            audio.addEventListener('ended', () => {
-                URL.revokeObjectURL(audioUrl);
+            this.currentAudio.addEventListener('ended', () => {
+                if (this.currentAudio && this.currentAudio.src) {
+                    URL.revokeObjectURL(this.currentAudio.src);
+                }
+                this.currentAudio = null;
                 console.log('Voicevoxクライアント: 音声再生完了');
             });
 
             // 音声再生エラー時の処理
-            audio.addEventListener('error', (e) => {
+            this.currentAudio.addEventListener('error', (e) => {
                 console.error('Voicevoxクライアント: 音声再生エラー', e);
-                URL.revokeObjectURL(audioUrl); // エラー時もURLを解放
+                if (this.currentAudio && this.currentAudio.src) {
+                    URL.revokeObjectURL(this.currentAudio.src);
+                }
+                this.currentAudio = null; // エラー時もcurrentAudioをnullに設定
             });
 
             // 音声の読み込みエラーを処理
-            audio.addEventListener('loadstart', () => {
+            this.currentAudio.addEventListener('loadstart', () => {
                 console.log('Voicevoxクライアント: 音声読み込み開始');
             });
 
-            audio.addEventListener('loadedmetadata', () => {
+            this.currentAudio.addEventListener('loadedmetadata', () => {
                 console.log('Voicevoxクライアント: 音声メタデータ読み込み完了');
             });
 
-            audio.addEventListener('loadeddata', () => {
+            this.currentAudio.addEventListener('loadeddata', () => {
                 console.log('Voicevoxクライアント: 音声データ読み込み完了');
             });
 
-            audio.addEventListener('canplay', () => {
+            this.currentAudio.addEventListener('canplay', () => {
                 console.log('Voicevoxクライアント: 音声再生準備完了');
             });
 
-            audio.addEventListener('canplaythrough', () => {
+            this.currentAudio.addEventListener('canplaythrough', () => {
                 console.log('Voicevoxクライアント: 音声全体の再生準備完了');
             });
 
-            audio.addEventListener('abort', () => {
+            this.currentAudio.addEventListener('abort', () => {
                 console.log('Voicevoxクライアント: 音声読み込み中止');
+                if (this.currentAudio && this.currentAudio.src) {
+                    URL.revokeObjectURL(this.currentAudio.src);
+                }
+                this.currentAudio = null;
             });
 
-            audio.addEventListener('stalled', () => {
+            this.currentAudio.addEventListener('stalled', () => {
                 console.log('Voicevoxクライアント: 音声読み込み停滞');
             });
 
-            audio.addEventListener('suspend', () => {
+            this.currentAudio.addEventListener('suspend', () => {
                 console.log('Voicevoxクライアント: 音声読み込み中断');
             });
 
             // 音声再生
             console.log('Voicevoxクライアント: 音声を再生します');
-            await audio.play();
+            await this.currentAudio.play();
 
             return true;
         } catch (error) {
@@ -175,6 +195,13 @@ export class VoicevoxClient {
                 message: (error as Error).message,
                 stack: (error as Error).stack
             });
+            // エラーが発生した場合もcurrentAudioをnullに設定
+            if (this.currentAudio) {
+                if (this.currentAudio.src) {
+                    URL.revokeObjectURL(this.currentAudio.src);
+                }
+                this.currentAudio = null;
+            }
             return false;
         }
     }

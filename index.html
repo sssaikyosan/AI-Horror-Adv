@@ -148,12 +148,12 @@
         <h2>音声設定方法</h2>
       </div>
       <div class="modal-body">
-        <p>このゲームでは、VOICEVOX互換のAPIを使用して音声読み上げ機能を利用できます。</p>
+        <p>このゲームでは、VOICEVOXを使用して音声読み上げ機能を利用できます。</p>
         <p><strong>設定手順:</strong></p>
         <ol>
           <li>VOICEVOXを起動します。</li>
-          <li><a href="http://localhost:50021/setting" target="_blank">http://localhost:50021/setting</a>にアクセスし、CORS
-            Policy ModeをALLに設定します</li>
+          <li><a href="http://localhost:50021/setting" target="_blank">http://localhost:50021/setting</a>にアクセスします。</li>
+          <li>CORS Policy Modeをallに設定します</li>
           <li>VOICEVOXを再起動します。</li>
           <li>ページを再読み込み(F5キー)します。</li>
         </ol>
@@ -175,10 +175,10 @@
         <ol>
           <li><a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a> でAPIキーを取得します。</li>
           <li>「API Key」フィールドに取得したAPIキーを入力します。</li>
-          <li>使用するモデルを選択します (デフォルト: gemini-2.5-pro)。</li>
+          <li>使用するモデルを選択します (例: gemini-2.5-pro)。</li>
         </ol>
         <li>
-          2025年9月7日現在、geminiAPIは1分に5回、1日100回まで無料で使えるようです。
+          2025年9月7日現在、gemini-2.5-proは1分に5回、1日100回まで無料で使えるようです。
         </li>
         <li>
           openai互換apiを使用して他サービスやローカルllmで動作させることもできます。

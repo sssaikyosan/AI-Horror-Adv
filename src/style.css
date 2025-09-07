@@ -644,130 +644,135 @@ button:focus-visible {
 
 /* Modal Styles */
 .modal {
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .modal-content {
-    background-color: #1e1e1e;
-    color: #e0e0e0;
-    margin: auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-    max-width: 500px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    text-align: center;
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 500px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  text-align: center;
 }
 
 .close-button {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
 }
 
 .close-button:hover,
 .close-button:focus {
-    color: #fff;
-    text-decoration: none;
-    cursor: pointer;
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .modal-button {
-    background: linear-gradient(135deg, rgba(80, 60, 120, 0.4) 0%, rgba(50, 40, 90, 0.3) 100%);
-    color: rgba(220, 200, 240, 0.95);
-    border: 1px solid rgba(80, 60, 120, 0.5);
-    border-radius: 6px;
-    padding: 0.8rem 1.5rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 1rem;
-    margin-top: 1rem;
+  background: linear-gradient(135deg, rgba(80, 60, 120, 0.4) 0%, rgba(50, 40, 90, 0.3) 100%);
+  color: rgba(220, 200, 240, 0.95);
+  border: 1px solid rgba(80, 60, 120, 0.5);
+  border-radius: 6px;
+  padding: 0.8rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  margin-top: 1rem;
 }
 
 .modal-button:hover {
-    background: linear-gradient(135deg, rgba(100, 80, 150, 0.5) 0%, rgba(70, 60, 120, 0.4) 100%);
-    border-color: rgba(120, 90, 160, 0.7);
-    box-shadow: 0 2px 8px rgba(80, 60, 120, 0.4);
+  background: linear-gradient(135deg, rgba(100, 80, 150, 0.5) 0%, rgba(70, 60, 120, 0.4) 100%);
+  border-color: rgba(120, 90, 160, 0.7);
+  box-shadow: 0 2px 8px rgba(80, 60, 120, 0.4);
 }
 
 .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid rgba(80, 60, 120, 0.4);
-    padding-bottom: 1rem;
-    margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(80, 60, 120, 0.4);
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .modal-header h2 {
-    margin: 0;
+  margin: 0;
 }
 
 .modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-    margin-top: 1.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid rgba(80, 60, 120, 0.4);
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(80, 60, 120, 0.4);
 }
 
 .modal-button.secondary {
-    background: rgba(20, 10, 30, 0.4);
-    border-color: rgba(80, 60, 120, 0.3);
+  background: rgba(20, 10, 30, 0.4);
+  border-color: rgba(80, 60, 120, 0.3);
 }
 
 .modal-button.secondary:hover {
-    background: rgba(30, 20, 50, 0.6);
-    border-color: rgba(100, 80, 140, 0.5);
+  background: rgba(30, 20, 50, 0.6);
+  border-color: rgba(100, 80, 140, 0.5);
 }
 
 .secondary-btn {
-    background: transparent;
-    border: 1px solid rgba(80, 60, 120, 0.5);
-    color: rgba(220, 200, 240, 0.8);
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: block;
-    width: 100%;
-    max-width: 300px;
-    margin: 1rem auto;
-    text-align: center;
+  background: transparent;
+  border: 1px solid rgba(80, 60, 120, 0.5);
+  color: rgba(220, 200, 240, 0.8);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  margin: 1rem auto;
+  text-align: center;
 }
 
 .secondary-btn:hover {
-    background: rgba(80, 60, 120, 0.2);
-    border-color: rgba(120, 90, 160, 0.7);
+  background: rgba(80, 60, 120, 0.2);
+  border-color: rgba(120, 90, 160, 0.7);
+}
+
+#api-setup-info-modal .modal-body {
+  text-align: left;
+  padding: 0 1rem;
 }
 
 #audio-setup-info-modal .modal-body {
-    text-align: left;
-    padding: 0 1rem;
+  text-align: left;
+  padding: 0 1rem;
 }
 
 #audio-setup-info-modal .modal-body p,
 #audio-setup-info-modal .modal-body ul,
 #audio-setup-info-modal .modal-body ol {
-    margin-bottom: 1rem;
+  margin-bottom: 1rem;
 }
 
 #audio-setup-info-modal .modal-body code {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 0.2rem 0.4rem;
-    border-radius: 4px;
-    font-family: 'Courier New', Courier, monospace;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-family: 'Courier New', Courier, monospace;
 }

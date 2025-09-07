@@ -13,6 +13,14 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+body {
+  background-image: url('./background.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
 a {
   font-weight: 500;
   color: #646cff;

@@ -284,7 +284,7 @@ loadButton.addEventListener('click', async () => {
     }
 
     gameEngine = new GameEngine(client as any, selectedSpeakerId);
-    
+
     const initialSettings = {
       apiType: apiType,
       apiKey: apiKey,
@@ -292,7 +292,7 @@ loadButton.addEventListener('click', async () => {
       model: selectedModel,
       speakerId: selectedSpeakerId
     };
-    
+
     gameUI = new GameUI(gameEngine, initialSettings);
   }
 
@@ -300,10 +300,10 @@ loadButton.addEventListener('click', async () => {
   if (loadedState) {
     setupScreen.style.display = 'none';
     gameScreen.style.display = 'flex';
-    
+
     // ゲームUIを更新
     gameUI.updateDisplayFromState(loadedState);
-    
+
     // 情景描写を読み上げ
     await gameEngine.speakText(loadedState.sceneDescription);
   } else {

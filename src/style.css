@@ -504,10 +504,11 @@ button:focus-visible {
 
 .form-group {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 1rem;
   margin-bottom: 1.5rem;
-  align-items: flex-start;
 }
 
 .form-group:last-child {

@@ -14,7 +14,7 @@
     </div>
     <div class="setup-container">
       <div class="settings-section">
-        <div class="form-group form-group-horizontal">
+        <div class="form-group">
           <label for="api-type">API Type:</label>
           <select id="api-type">
             <option value="gemini">Gemini</option>
@@ -22,25 +22,25 @@
           </select>
         </div>
         <div id="api-settings-wrapper">
-          <div class="form-group form-group-horizontal" id="gemini-api-key-container">
+          <div class="form-group" id="gemini-api-key-container">
             <label for="gemini-api-key">API Key:</label>
             <input type="password" id="gemini-api-key" placeholder="Required for Gemini">
           </div>
-          <div class="form-group form-group-horizontal" id="openai-api-key-container" style="display: none;">
+          <div class="form-group" id="openai-api-key-container" style="display: none;">
             <label for="openai-api-key">API Key:</label>
             <input type="password" id="openai-api-key" placeholder="Optional">
           </div>
-          <div class="form-group form-group-horizontal" id="api-url-container">
+          <div class="form-group" id="api-url-container">
             <label for="api-url">Endpoint URL:</label>
             <input type="text" id="api-url" value="http://localhost:1234/v1">
           </div>
-          <div class="form-group form-group-horizontal" id="model-container" style="display: none;">
+          <div class="form-group" id="model-container" style="display: none;">
             <label for="model-select">Model:</label>
             <select id="model-select">
               <!-- Options will be populated dynamically -->
             </select>
           </div>
-          <div class="form-group form-group-horizontal">
+          <div class="form-group">
             <label for="temperature">Temperature (0.0 - 2.0):</label>
             <input type="number" id="temperature" min="0" max="2" step="0.1" value="2">
             <small style="font-size: 0.8rem; color: rgba(220, 200, 240, 0.6); margin-top: 0.2rem;">(オプション：2が推奨値)</small>
@@ -49,7 +49,7 @@
       </div>
 
       <div class="settings-section">
-        <div class="form-group form-group-horizontal" id="voice-container">
+        <div class="form-group" id="voice-container">
           <label for="voice-select">読み上げ音声:</label>
           <select id="voice-select">
             <option value="-1">なし</option>
@@ -132,7 +132,7 @@
         <h2>設定</h2>
       </div>
       <div class="settings-section">
-        <div class="form-group form-group-horizontal">
+        <div class="form-group">
           <label for="settings-api-type">API Type:</label>
           <select id="settings-api-type">
             <option value="gemini">Gemini</option>
@@ -140,19 +140,19 @@
           </select>
         </div>
         <div id="settings-api-settings-wrapper">
-          <div class="form-group form-group-horizontal" id="gemini-api-key-container">
+          <div class="form-group" id="gemini-api-key-container">
             <label for="settings-gemini-api-key">API Key:</label>
             <input type="password" id="settings-gemini-api-key">
           </div>
-          <div class="form-group form-group-horizontal" id="openai-api-key-container" style="display: none;">
+          <div class="form-group" id="openai-api-key-container" style="display: none;">
             <label for="settings-openai-api-key">API Key:</label>
             <input type="password" id="settings-openai-api-key">
           </div>
-          <div class="form-group form-group-horizontal" id="api-url-container">
+          <div class="form-group" id="api-url-container">
             <label for="settings-api-url">Endpoint URL:</label>
             <input type="text" id="settings-api-url">
           </div>
-          <div class="form-group form-group-horizontal" id="model-container" style="display: none;">
+          <div class="form-group" id="model-container" style="display: none;">
             <label for="settings-model-select">Model:</label>
             <select id="settings-model-select">
             </select>
@@ -162,7 +162,7 @@
               <span>モデルを読み込み中...</span>
             </div>
           </div>
-          <div class="form-group form-group-horizontal">
+          <div class="form-group">
             <label for="settings-temperature">Temperature (0.0 - 2.0):</label>
             <input type="number" id="settings-temperature" min="0" max="2" step="0.1" value="2">
             <small style="font-size: 0.8rem; color: rgba(220, 200, 240, 0.6); margin-top: 0.2rem;">(オプション：2が推奨値)</small>
@@ -171,7 +171,7 @@
       </div>
 
       <div class="settings-section">
-        <div class="form-group form-group-horizontal" id="settings-voice-container">
+        <div class="form-group" id="settings-voice-container">
           <label for="settings-voice-select">読み上げ音声:</label>
           <select id="settings-voice-select">
           </select>

@@ -39,6 +39,10 @@
         <label for="openai-api-key">OpenAI Compatible API Key:</label>
         <input type="password" id="openai-api-key" placeholder="Optional for OpenAI Compatible">
       </div>
+      <div class="form-group">
+        <label for="temperature">Temperature (0.0 - 2.0):</label>
+        <input type="number" id="temperature" min="0" max="2" step="0.1" value="2">
+      </div>
       <div class="form-group" id="voice-container">
         <label for="voice-select">読み上げ音声:</label>
         <select id="voice-select">
@@ -138,6 +142,10 @@
       <div class="form-group" id="settings-openai-api-key-container" style="display: none;">
         <label for="settings-openai-api-key">OpenAI Compatible API Key:</label>
         <input type="password" id="settings-openai-api-key">
+      </div>
+      <div class="form-group">
+        <label for="settings-temperature">Temperature (0.0 - 2.0):</label>
+        <input type="number" id="settings-temperature" min="0" max="2" step="0.1" value="2">
       </div>
       <div class="form-group" id="settings-voice-container">
         <label for="settings-voice-select">読み上げ音声:</label>

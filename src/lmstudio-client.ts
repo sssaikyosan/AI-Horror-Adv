@@ -80,7 +80,7 @@ export class LMStudioClient {
         const request: LMStudioCompletionRequest = {
             model: options?.model || this.defaultModel,
             messages,
-            temperature: options?.temperature ?? 0.7,
+            temperature: options?.temperature ?? 0.2,
             max_tokens: options?.max_tokens,
             stream: !!onToken
         };
@@ -195,7 +195,7 @@ export class LMStudioClient {
         }
     }
 
-    async generateInitialScenario(): Promise<string> {
+    async generateInitialScenario(temperature?: number): Promise<string> {
         const messages: LMStudioMessage[] = [
             {
                 role: 'system',
@@ -244,6 +244,6 @@ export class LMStudioClient {
             }
         ];
 
-        return await this.sendMessage(messages);
+        return await this.sendMessage(messages, undefined, { temperature: temperature });
     }
 }

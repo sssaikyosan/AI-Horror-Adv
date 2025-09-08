@@ -10,6 +10,7 @@ interface GameSettings {
     apiUrl: string;
     model: string;
     speakerId: number;
+    temperature: number;
 }
 
 export class GameUI {
@@ -44,6 +45,7 @@ export class GameUI {
     private settingsApiUrlContainer: HTMLElement | null = null;
     private settingsGeminiApiKeyContainer: HTMLElement | null = null;
     private settingsOpenaiApiKeyContainer: HTMLElement | null = null;
+    private settingsTemperatureInput: HTMLInputElement | null = null;
 
     // Audio Setup Info Modal
     private audioSetupInfoModal: HTMLElement | null = null;
@@ -94,6 +96,7 @@ export class GameUI {
         this.settingsApiUrlContainer = document.querySelector('#settings-api-url-container');
         this.settingsGeminiApiKeyContainer = document.querySelector('#settings-gemini-api-key-container');
         this.settingsOpenaiApiKeyContainer = document.querySelector('#settings-openai-api-key-container');
+        this.settingsTemperatureInput = document.querySelector('#settings-temperature') as HTMLInputElement | null;
 
         // Audio Setup Info Modal elements
         this.audioSetupInfoModal = document.querySelector('#audio-setup-info-modal');
@@ -143,6 +146,7 @@ export class GameUI {
         if (this.settingsApiUrlInput) this.settingsApiUrlInput.value = this.currentSettings.apiUrl;
         if (this.settingsGeminiApiKeyInput) this.settingsGeminiApiKeyInput.value = this.currentSettings.apiType === 'gemini' ? this.currentSettings.apiKey : '';
         if (this.settingsOpenaiApiKeyInput) this.settingsOpenaiApiKeyInput.value = this.currentSettings.apiType === 'openai' ? this.currentSettings.apiKey : '';
+        if (this.settingsTemperatureInput) this.settingsTemperatureInput.value = this.currentSettings.temperature.toString();
 
         // Load dynamic options
         await this.loadSpeakersToSettings();
@@ -175,14 +179,15 @@ export class GameUI {
 
     private saveSettings(): void {
         if (!this.settingsApiTypeSelect || !this.settingsGeminiApiKeyInput || !this.settingsOpenaiApiKeyInput || !this.settingsApiUrlInput || 
-            !this.settingsModelSelect || !this.settingsVoiceSelect) return;
+            !this.settingsModelSelect || !this.settingsVoiceSelect || !this.settingsTemperatureInput) return;
 
         const newSettings: GameSettings = {
             apiType: this.settingsApiTypeSelect.value,
             apiKey: this.settingsApiTypeSelect.value === 'gemini' ? this.settingsGeminiApiKeyInput.value : this.settingsOpenaiApiKeyInput.value,
             apiUrl: this.settingsApiUrlInput.value,
             model: this.settingsModelSelect.value,
-            speakerId: parseInt(this.settingsVoiceSelect.value, 10)
+            speakerId: parseInt(this.settingsVoiceSelect.value, 10),
+            temperature: parseFloat(this.settingsTemperatureInput.value)
         };
 
         // Update current settings
@@ -203,6 +208,7 @@ export class GameUI {
         // Update the game engine with the new client and speaker
         this.gameEngine.updateClient(newClient);
         this.gameEngine.updateSpeaker(newSettings.speakerId);
+        this.gameEngine.updateTemperature(newSettings.temperature);
 
         this.closeSettingsModal();
     }
@@ -421,6 +427,11 @@ export class GameUI {
             if (result.error) {
                 this.showErrorPopup(result.error, 'transient');
             } else {
+                // If this is a restart, we need to clear the UI before updating
+                if (choiceId === 'restart') {
+                    this.sceneElement.textContent = '';
+                    this.choicesContainer.innerHTML = '';
+                }
                 await this.animateSceneUpdate(result.updatedScene);
                 this.updateDisplay(result.newChoices);
             }

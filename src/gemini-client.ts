@@ -62,12 +62,19 @@ export class GeminiClient {
         return geminiContents;
     }
 
-    async sendMessage(messages: LMStudioMessage[]): Promise<string> {
+    async sendMessage(messages: LMStudioMessage[], temperature?: number): Promise<string> {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${this.apiKey}`;
 
-        const requestBody: GeminiRequest = {
+        const requestBody: any = {
             contents: this.transformMessagesToGemini(messages),
         };
+
+        // Add temperature if provided
+        if (temperature !== undefined) {
+            requestBody.generationConfig = {
+                temperature: temperature
+            };
+        }
 
         try {
             const response = await fetch(url, {
@@ -91,7 +98,7 @@ export class GeminiClient {
         }
     }
 
-    async generateInitialScenario(): Promise<string> {
+    async generateInitialScenario(temperature?: number): Promise<string> {
         const messages: LMStudioMessage[] = [
             {
                 role: 'system',
@@ -122,7 +129,7 @@ export class GeminiClient {
             }
         ];
 
-        return await this.sendMessage(messages);
+        return await this.sendMessage(messages, temperature);
     }
 
     async getAvailableModels(): Promise<string[]> {

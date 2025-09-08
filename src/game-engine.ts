@@ -28,8 +28,9 @@ export class GameEngine {
     private bgmManager: BGMManager;
     private voicevoxClient: VoicevoxClient;
     private selectedSpeakerId: number;
+    private temperature: number = 0.2;
 
-    constructor(client: LMStudioClient | GeminiClient, selectedSpeakerId: number = 0) {
+    constructor(client: LMStudioClient | GeminiClient, selectedSpeakerId: number = 0, temperature: number = 0.2) {
         this.client = client;
         this.gameState = {
             sceneDescription: '',
@@ -41,6 +42,7 @@ export class GameEngine {
         this.bgmManager = new BGMManager();
         this.voicevoxClient = new VoicevoxClient();
         this.selectedSpeakerId = selectedSpeakerId;
+        this.temperature = temperature;
 
         this.systemPrompt = `あなたはホラーゲームのゲームマスターです。
 以下のルールに従って不気味で恐怖を煽るゲームを進行してください：
@@ -87,7 +89,13 @@ export class GameEngine {
         // BGMを再生
         this.bgmManager.play();
         try {
-            const initialScenarioJson = await this.client.generateInitialScenario();
+            let initialScenarioJson = '';
+            // Check which type of client we're using
+            if (this.client instanceof GeminiClient) {
+                initialScenarioJson = await (this.client as GeminiClient).generateInitialScenario(this.temperature);
+            } else {
+                initialScenarioJson = await (this.client as LMStudioClient).generateInitialScenario(this.temperature);
+            }
             console.log(initialScenarioJson);
             const withoutResult = initialScenarioJson.replace(/<think>[\s\S]*?<\/think>/g, '');
             console.log(withoutResult);
@@ -156,9 +164,9 @@ export class GameEngine {
             let response = '';
             // Check which type of client we're using
             if (this.client instanceof GeminiClient) {
-                response = await (this.client as GeminiClient).sendMessage(messages);
+                response = await (this.client as GeminiClient).sendMessage(messages, this.temperature);
             } else {
-                response = await (this.client as LMStudioClient).sendMessage(messages);
+                response = await (this.client as LMStudioClient).sendMessage(messages, undefined, { temperature: this.temperature });
             }
             console.log('GameEngine: LLMからのレスポンス', response);
 
@@ -309,6 +317,11 @@ export class GameEngine {
     updateSpeaker(speakerId: number): void {
         this.selectedSpeakerId = speakerId;
         console.log('GameEngine speaker updated to:', speakerId);
+    }
+
+    updateTemperature(temperature: number): void {
+        this.temperature = temperature;
+        console.log('GameEngine temperature updated to:', temperature);
     }
 
     /**

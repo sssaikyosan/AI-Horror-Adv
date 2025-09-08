@@ -13,6 +13,7 @@ const saveAndQuitButton = document.getElementById('save-and-quit-btn') as HTMLBu
 const apiUrlInput = document.getElementById('api-url') as HTMLInputElement;
 const geminiApiKeyInput = document.getElementById('gemini-api-key') as HTMLInputElement;
 const openaiApiKeyInput = document.getElementById('openai-api-key') as HTMLInputElement;
+const temperatureInput = document.getElementById('temperature') as HTMLInputElement;
 const apiTypeSelect = document.getElementById('api-type') as HTMLSelectElement;
 const modelContainer = document.getElementById('model-container') as HTMLElement;
 const modelSelect = document.getElementById('model-select') as HTMLSelectElement;
@@ -245,11 +246,18 @@ startButton.addEventListener('click', async () => {
     apiKey: apiType === 'gemini' ? geminiApiKey : openaiApiKey,
     apiUrl: apiUrl,
     model: selectedModel,
-    speakerId: selectedSpeakerId
+    speakerId: selectedSpeakerId,
+    temperature: parseFloat(temperatureInput.value)
   };
 
   // Initialize game UI
   gameUI = new GameUI(gameEngine, initialSettings);
+
+  // Clear UI elements before starting new game
+  const sceneElement = document.querySelector('#scene-description');
+  const choicesContainer = document.querySelector('#choices-container');
+  if (sceneElement) sceneElement.textContent = '';
+  if (choicesContainer) choicesContainer.innerHTML = '';
 
   // Switch screens
   setupScreen.style.display = 'none';
@@ -262,7 +270,6 @@ startButton.addEventListener('click', async () => {
   } catch (error) {
     console.error('ゲームの初期化に失敗しました:', error);
     // You might want to show the error on the UI
-    const sceneElement = document.querySelector('#scene-description');
     if (sceneElement) {
       sceneElement.textContent = 'ゲームの初期化に失敗しました。APIの設定を確認してください。';
     }
@@ -277,6 +284,7 @@ loadButton.addEventListener('click', async () => {
     const apiType = apiTypeSelect.value;
     const selectedModel = modelSelect.value;
     const selectedSpeakerId = parseInt(voiceSelect.value, 10) || 0;
+    const temperature = parseFloat(temperatureInput.value);
 
     let client: LMStudioClient | GeminiClient;
 
@@ -297,7 +305,8 @@ loadButton.addEventListener('click', async () => {
       apiKey: apiType === 'gemini' ? geminiApiKey : openaiApiKey,
       apiUrl: apiUrl,
       model: selectedModel,
-      speakerId: selectedSpeakerId
+      speakerId: selectedSpeakerId,
+      temperature: temperature
     };
 
     gameUI = new GameUI(gameEngine, initialSettings);

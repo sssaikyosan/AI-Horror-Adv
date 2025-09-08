@@ -244,8 +244,8 @@ export class GameUI {
             // ゲームUIを更新
             this.updateDisplayFromState(loadedState);
 
-            // 情景描写を読み上げ
-            await this.gameEngine.speakText(loadedState.sceneDescription);
+            // ストーリーを読み上げ
+            await this.gameEngine.speakText(loadedState.story);
         } else {
             alert('セーブデータが見つかりませんでした。');
         }
@@ -515,9 +515,9 @@ export class GameUI {
         const gameState = this.gameEngine.getGameState();
         if (gameState.gameStatus === 'gameover' || gameState.gameStatus === 'gameclear') {
             const description = gameState.gameResultDescription || '';
-            this.sceneElement.innerHTML = `<p>${gameState.sceneDescription}</p><p><strong>${description}</strong></p>`;
+            this.sceneElement.innerHTML = `<p>${gameState.story}</p><p><strong>${description}</strong></p>`;
         } else {
-            this.sceneElement.textContent = gameState.sceneDescription;
+            this.sceneElement.textContent = gameState.story;
         }
         this.displayChoices(choices);
     }
@@ -525,9 +525,9 @@ export class GameUI {
     public updateDisplayFromState(gameState: GameState): void {
         if (gameState.gameStatus === 'gameover' || gameState.gameStatus === 'gameclear') {
             const description = gameState.gameResultDescription || '';
-            this.sceneElement.innerHTML = `<p>${gameState.sceneDescription}</p><p><strong>${description}</strong></p>`;
+            this.sceneElement.innerHTML = `<p>${gameState.story}</p><p><strong>${description}</strong></p>`;
         } else {
-            this.sceneElement.textContent = gameState.sceneDescription;
+            this.sceneElement.textContent = gameState.story;
         }
 
         // 選択肢を表示

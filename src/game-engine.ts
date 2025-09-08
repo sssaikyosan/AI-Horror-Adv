@@ -6,7 +6,7 @@ import { VoicevoxClient } from './voicevox-client';
 export type GameStatus = 'continue' | 'gameover' | 'gameclear';
 
 export interface GameState {
-    sceneDescription: string;
+    story: string;
     history: string[];
     currentStep: number;
     gameStatus: GameStatus;
@@ -32,7 +32,7 @@ export class GameEngine {
     constructor(client: LMStudioClient | GeminiClient, selectedSpeakerId: number = 0) {
         this.client = client;
         this.gameState = {
-            sceneDescription: '',
+            story: '',
             history: [],
             currentStep: 0,
             gameStatus: 'continue',
@@ -43,21 +43,21 @@ export class GameEngine {
         this.selectedSpeakerId = selectedSpeakerId;
 
         this.systemPrompt = `あなたはホラーゲームのゲームマスターです。
-以下のルールに従って不気味で恐怖を煽るゲームを進行してください：
+以下のルールに従ってゲームを進行してください：
 
 1. ゲームステータスとして、ゲーム続行中(continue)、ゲームオーバー(gameover)、ゲームクリア(gameclear)、から適切なものを提示する。
-2. 情景描写を詳細に提供する
+2. ストーリーを詳細に提供する
 3. ゲーム続行中の場合、プレイヤーの選択肢として3つのアクションか提示する
 4. 各選択肢は短いタイトルと詳細な説明から構成される
 5. 選択肢は現在の状況に関連したものでなければならない
-6. プレイヤーの選択に基づいて情景描写を更新し、物語を進行させ、適切なタイミングでゲームオーバーや、ゲームクリアの提示ができるような構成にする。
+6. プレイヤーの選択に基づいてストーリーを更新し、物語を進行させ、適切なタイミングでゲームオーバーや、ゲームクリアの提示をする。
 7. 一貫性のあるストーリーを維持する
 
 レスポンスは必ず以下のJSON形式で返してください：
 ゲーム続行中の場合:
 {
   "gameStatus": "continue",
-  "sceneDescription": "現在の情景描写",
+  "story": "現在のストーリー",
   "choices": [
     {
       "id": "choice1",
@@ -70,19 +70,19 @@ export class GameEngine {
 ゲームオーバーの場合:
 {
   "gameStatus": "gameover",
-  "sceneDescription": "現在の情景描写",
+  "story": "現在のストーリー",
   "description": "結果の詳細な説明"
 }
 
 ゲークリアの場合:
 {
   "gameStatus": "gameclear",
-  "sceneDescription": "現在の情景描写",
+  "story": "現在のストーリー",
   "description": "結果の詳細な説明"
 }`;
     }
 
-    async startGame(): Promise<{ sceneDescription: string; choices: Choice[] }> {
+    async startGame(): Promise<{ story: string; choices: Choice[] }> {
         // BGMを再生
         this.bgmManager.play();
         try {
@@ -95,8 +95,8 @@ export class GameEngine {
             const initialScenario = JSON.parse(jsonMatch[0]);
 
             this.gameState = {
-                sceneDescription: initialScenario.sceneDescription,
-                history: [initialScenario.sceneDescription],
+                story: initialScenario.story,
+                history: [initialScenario.story],
                 currentStep: 0,
                 gameStatus: 'continue',
                 choices: initialScenario.choices || []
@@ -105,10 +105,10 @@ export class GameEngine {
             this.choices = initialScenario.choices || [];
 
             // 初期情景を読み上げ
-            await this.speakText(initialScenario.sceneDescription);
+            await this.speakText(initialScenario.story);
 
             return {
-                sceneDescription: this.gameState.sceneDescription,
+                story: this.gameState.story,
                 choices: this.choices
             };
 
@@ -129,21 +129,21 @@ export class GameEngine {
             {
                 role: 'system',
                 content: `あなたはホラーゲームのゲームマスターです。
-以下のルールに従って、プレイヤーが没入できるような開始シナリオを生成してください。：
+以下のルールに従って、開始シナリオを生成してください。：
 
 1. ゲームステータスとして、ゲーム続行中(continue)、ゲームオーバー(gameover)、ゲームクリア(gameclear)、から適切なものを提示する。
-2. 情景描写を詳細に提供する
+2. ストーリーを詳細に提供する
 3. ゲーム続行中の場合、プレイヤーの選択肢として3つのアクションか提示する
 4. 各選択肢は短いタイトルと詳細な説明から構成される
 5. 選択肢は現在の状況に関連したものでなければならない
-6. プレイヤーの選択に基づいて情景描写を更新し、物語を進行させ、適切なタイミングでゲームオーバーや、ゲームクリアの提示ができるような構成にする。
+6. プレイヤーの選択に基づいてストーリーを更新し、物語を進行させ、適切なタイミングでゲームオーバーや、ゲームクリアの提示をする。
 7. 一貫性のあるストーリーを維持する
 
 レスポンスは必ず以下のJSON形式で返してください：
 ゲーム続行中の場合:
 {
   "gameStatus": "continue",
-  "sceneDescription": "現在の情景描写",
+  "story": "現在のストーリー",
   "choices": [
     {
       "id": "choice1",
@@ -156,14 +156,14 @@ export class GameEngine {
 ゲームオーバーの場合:
 {
   "gameStatus": "gameover",
-  "sceneDescription": "現在の情景描写",
+  "story": "現在のストーリー",
   "description": "結果の詳細な説明"
 }
 
 ゲークリアの場合:
 {
   "gameStatus": "gameclear",
-  "sceneDescription": "現在の情景描写",
+  "story": "現在のストーリー",
   "description": "結果の詳細な説明"
 }`
             },
@@ -189,7 +189,7 @@ export class GameEngine {
             console.log('GameEngine: 再プレイ処理');
             const result = await this.startGame();
             return {
-                updatedScene: result.sceneDescription,
+                updatedScene: result.story,
                 newChoices: result.choices
             };
         }
@@ -200,7 +200,7 @@ export class GameEngine {
         this.gameState.history.push(choiceAction);
         this.gameState.currentStep++;
 
-        // 新しい情景描写と選択肢を生成
+        // 新しいストーリーと選択肢を生成
         const messages: LMStudioMessage[] = [
             { role: 'system', content: this.systemPrompt },
             { role: 'user', content: this.createChoiceContextPrompt(choiceId) }
@@ -226,8 +226,8 @@ export class GameEngine {
 
             const parsedResponse = JSON.parse(jsonMatch[0]);
 
-            if (parsedResponse.sceneDescription) {
-                this.gameState.sceneDescription = parsedResponse.sceneDescription;
+            if (parsedResponse.story) {
+                this.gameState.story = parsedResponse.story;
             }
 
             if (parsedResponse.gameStatus) {
@@ -253,17 +253,17 @@ export class GameEngine {
                 this.choices = parsedResponse.choices || [];
             }
 
-            // 新しい情景描写を履歴に追加
-            this.gameState.history.push(this.gameState.sceneDescription);
+            // 新しいストーリーを履歴に追加
+            this.gameState.history.push(this.gameState.story);
 
             // gameStateに選択肢を保存
             this.gameState.choices = this.choices;
 
             // 新しい情景を読み上げ
-            await this.speakText(this.gameState.sceneDescription);
+            await this.speakText(this.gameState.story);
 
             return {
-                updatedScene: this.gameState.sceneDescription,
+                updatedScene: this.gameState.story,
                 newChoices: this.choices
             };
         } catch (error) {
@@ -281,7 +281,7 @@ export class GameEngine {
             const errorMessage = '通信に失敗しました。APIの設定を確認してもう一度選択してください。';
 
             return {
-                updatedScene: this.gameState.sceneDescription, // 直前の情景描写を返す
+                updatedScene: this.gameState.story, // 直前のストーリーを返す
                 newChoices: this.choices, // 直前の選択肢を返す
                 error: errorMessage
             };
@@ -291,13 +291,13 @@ export class GameEngine {
     private createChoiceContextPrompt(choiceId: string): string {
         const choiceAction = this.getChoiceActionText(choiceId);
         return `プレイヤーが以下のアクションを選択しました：
-\"${choiceAction}\"\r\n\r現在のゲーム状況：\n情景描写: ${this.gameState.sceneDescription}
+\"${choiceAction}\"\r\n\r現在のゲーム状況：\nストーリー: ${this.gameState.story}
 
-この選択の結果として、ゲーム続行、ゲームオーバー、ゲームクリアのいずれかを判断してください。その後新しい情景描写を生成し、ゲームステータス及び、ゲームオーバー、ゲームクリアの場合は結果の詳細、ゲーム続行の場合は新しい選択肢を提示してください。レスポンスは必ず以下のJSON形式で返してください：
+この選択の結果として、ゲーム続行、ゲームオーバー、ゲームクリアのいずれかを判断してください。その後新しいストーリーを生成し、ゲームステータス及び、ゲームオーバー、ゲームクリアの場合は結果の詳細、ゲーム続行の場合は新しい選択肢を提示してください。レスポンスは必ず以下のJSON形式で返してください：
 ゲーム続行中の場合:
 {
   "gameStatus": "continue",
-  "sceneDescription": "現在の情景描写",
+  "story": "現在のストーリー",
   "choices": [
     {
       "id": "choice1",
@@ -310,14 +310,14 @@ export class GameEngine {
 ゲームオーバーの場合:
 {
   "gameStatus": "gameover",
-  "sceneDescription": "現在の情景描写",
+  "story": "現在のストーリー",
   "description": "結果の詳細な説明"
 }
 
 ゲークリアの場合:
 {
   "gameStatus": "gameclear",
-  "sceneDescription": "現在の情景描写",
+  "story": "現在のストーリー",
   "description": "結果の詳細な説明"
 }`;
     }
@@ -342,7 +342,7 @@ export class GameEngine {
 
     resetGame(): void {
         this.gameState = {
-            sceneDescription: '',
+            story: '',
             history: [],
             currentStep: 0,
             gameStatus: 'continue',
@@ -452,7 +452,7 @@ export class GameEngine {
         return (
             typeof state === 'object' &&
             state !== null &&
-            typeof state.sceneDescription === 'string' &&
+            typeof state.story === 'string' &&
             Array.isArray(state.history) &&
             typeof state.currentStep === 'number' &&
             (state.gameStatus === 'continue' || state.gameStatus === 'gameover' || state.gameStatus === 'gameclear')

@@ -144,6 +144,9 @@ export class GameUI {
         this.settingsToggleButton?.addEventListener('click', () => this.openSettings());
         this.settingsApiTypeSelect?.addEventListener('change', () => this.updateSettingsUI());
 
+        // API key inputs - automatically update models when API key is entered
+        this.settingsGeminiApiKeyInput?.addEventListener('input', () => this.loadGeminiModelsToSettings());
+
         // Confirm settings button
         this.confirmSettingsButton?.addEventListener('click', () => this.saveSettingsAndReturnToGame());
 

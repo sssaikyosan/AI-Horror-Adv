@@ -62,7 +62,7 @@ export class GameEngine {
     {
       "id": "choice1",
       "text": "選択肢の短いタイトル",
-      "description": "選択肢の詳細な説明"
+      "description": "選択肢の簡単な説明"
     }
   ]
 }
@@ -148,7 +148,7 @@ export class GameEngine {
     {
       "id": "choice1",
       "text": "選択肢の短いタイトル",
-      "description": "選択肢の詳細な説明"
+      "description": "選択肢の簡単な説明"
     }
   ]
 }
@@ -302,7 +302,7 @@ export class GameEngine {
     {
       "id": "choice1",
       "text": "選択肢の短いタイトル",
-      "description": "選択肢の詳細な説明"
+      "description": "選択肢の簡単な説明"
     }
   ]
 }

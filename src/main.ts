@@ -1,5 +1,4 @@
 import './style.css'
-import { LMStudioClient } from './lmstudio-client'
 import { GameEngine } from './game-engine'
 import { GameUI } from './game-ui'
 import { GeminiClient } from './gemini-client';

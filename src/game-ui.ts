@@ -45,6 +45,11 @@ export class GameUI {
     private modelLoadingIndicator: HTMLElement | null = null;
     private voiceLoadingIndicator: HTMLElement | null = null;
 
+    private startButton: HTMLElement | null = null;
+    private loadButton: HTMLElement | null = null;
+    private saveAndQuitButton: HTMLElement | null = null;
+    private confirmSettingsButton: HTMLElement | null = null;
+
     private apiSetupInfoModal: HTMLElement | null = null;
     private apiSetupInfoButton: HTMLElement | null = null;
     private apiSetupInfoCloseButton: HTMLElement | null = null;
@@ -84,6 +89,11 @@ export class GameUI {
         this.backToTitleButton = document.querySelector('#back-to-title-btn');
         this.errorModalCloseButton = document.querySelector('#error-modal-close-btn');
 
+        this.startButton = document.querySelector('#start-game-btn');
+        this.loadButton = document.querySelector('#load-game-btn');
+        this.saveAndQuitButton = document.querySelector('#save-and-quit-btn');
+        this.confirmSettingsButton = document.querySelector('#confirm-settings-btn');
+
         // Settings elements
         this.settingsToggleButton = document.querySelector('#settings-toggle-btn');
         this.settingsApiTypeSelect = document.querySelector('#api-type') as HTMLSelectElement | null;
@@ -121,8 +131,8 @@ export class GameUI {
         this.backToTitleButton?.addEventListener('click', () => {
             this.hideErrorPopup();
             this.gameScreen.style.display = 'none';
-            this.titleScreen.style.display = 'flex';
-            this.setupScreen.style.display = 'flex';
+            this.titleScreen.style.display = 'block';
+            this.setupScreen.style.display = 'block';
             this.resetGame();
         });
         this.errorModalCloseButton?.addEventListener('click', () => this.hideErrorPopup());
@@ -135,17 +145,12 @@ export class GameUI {
         this.settingsApiTypeSelect?.addEventListener('change', () => this.updateSettingsUI());
 
         // Confirm settings button
-        const confirmSettingsButton = document.querySelector('#confirm-settings-btn');
-        confirmSettingsButton?.addEventListener('click', () => this.saveSettingsAndReturnToGame());
+        this.confirmSettingsButton?.addEventListener('click', () => this.saveSettingsAndReturnToGame());
 
         // Title screen buttons
-        const startButton = document.querySelector('#start-game-btn');
-        const loadButton = document.querySelector('#load-game-btn');
-        const saveAndQuitButton = document.querySelector('#save-and-quit-btn');
-
-        startButton?.addEventListener('click', () => this.startGameFromTitle());
-        loadButton?.addEventListener('click', () => this.loadGameFromTitle());
-        saveAndQuitButton?.addEventListener('click', () => this.saveAndBackToTitle());
+        this.startButton?.addEventListener('click', () => this.startGameFromTitle());
+        this.loadButton?.addEventListener('click', () => this.loadGameFromTitle());
+        this.saveAndQuitButton?.addEventListener('click', () => this.saveAndBackToTitle());
 
         this.apiSetupInfoButton?.addEventListener('click', () => {
             this.openApiSetupInfoModal();
@@ -171,7 +176,7 @@ export class GameUI {
     private openSettings(): void {
         // When opening settings from game, show only confirm button
         this.gameScreen.style.display = 'none';
-        this.setupScreen.style.display = 'flex';
+        this.setupScreen.style.display = 'block';
         // Hide title screen specific buttons
         const titleButtons = document.querySelector('.main-actions');
         if (titleButtons) {
@@ -213,8 +218,8 @@ export class GameUI {
         this.gameEngine.saveGame();
         this.gameEngine.resetGame();
         this.gameScreen.style.display = 'none';
-        this.titleScreen.style.display = 'flex';
-        this.setupScreen.style.display = 'flex';
+        this.titleScreen.style.display = 'block';
+        this.setupScreen.style.display = 'block';
         const titleButtons = document.querySelector('.main-actions');
         if (titleButtons) {
             (titleButtons as HTMLElement).style.display = 'flex';
@@ -224,6 +229,8 @@ export class GameUI {
         if (settingButtons) {
             (settingButtons as HTMLElement).style.display = 'none';
         }
+        // Toggle load button to show it since we just saved
+        this.toggleLoadButton();
     }
 
     private async startGame(): Promise<void> {
@@ -356,6 +363,9 @@ export class GameUI {
                 this.settingsModelSelect.value = this.currentSettings.model;
             }
         }
+
+        // Toggle load button visibility based on saved game data
+        this.toggleLoadButton();
     }
 
     private async loadSpeakersToSettings(): Promise<void> {
@@ -656,5 +666,17 @@ export class GameUI {
 
     public getGameState(): GameState {
         return this.gameEngine.getGameState();
+    }
+
+    private toggleLoadButton(): void {
+        if (this.loadButton) {
+            // Check if save data exists in localStorage
+            const savedGameState = localStorage.getItem('aiHorrorGameState');
+            if (savedGameState) {
+                this.loadButton.style.display = 'block';
+            } else {
+                this.loadButton.style.display = 'none';
+            }
+        }
     }
 }

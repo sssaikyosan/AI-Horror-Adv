@@ -28,7 +28,7 @@ export class GameEngine {
     private bgmManager: BGMManager;
     private voicevoxClient: VoicevoxClient;
     private selectedSpeakerId: number;
-    private isSpeechEnabled: boolean = true; // デフォルトで音声読み上げを有効にする
+    private isSpeechEnabled: boolean = false; // デフォルトで音声読み上げを有効にする
 
     constructor(client: LMStudioClient | GeminiClient, selectedSpeakerId: number = 0) {
         this.client = client;

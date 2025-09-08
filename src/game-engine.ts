@@ -28,6 +28,7 @@ export class GameEngine {
     private bgmManager: BGMManager;
     private voicevoxClient: VoicevoxClient;
     private selectedSpeakerId: number;
+    private isSpeechEnabled: boolean = true; // デフォルトで音声読み上げを有効にする
 
     constructor(client: LMStudioClient | GeminiClient, selectedSpeakerId: number = 0) {
         this.client = client;
@@ -104,8 +105,8 @@ export class GameEngine {
 
             this.choices = initialScenario.choices || [];
 
-            // 初期情景を読み上げ
-            await this.speakText(initialScenario.story);
+            // 初期情景を読み上げ (音声読み上げがオンの場合のみ)
+            this.speakText(initialScenario.story);
 
             return {
                 story: this.gameState.story,
@@ -297,8 +298,8 @@ export class GameEngine {
             // gameStateに選択肢を保存
             this.gameState.choices = this.choices;
 
-            // 新しい情景を読み上げ
-            await this.speakText(this.gameState.story);
+            // 新しい情景を読み上げ (音声読み上げがオンの場合のみ)
+            this.speakText(this.gameState.story);
 
             return {
                 updatedScene: this.gameState.story,
@@ -371,6 +372,7 @@ export class GameEngine {
      * @param text 読み上げるテキスト
      */
     async speakText(text: string): Promise<void> {
+        if (!this.isSpeechEnabled) return
         try {
             console.log('GameEngine: テキストを読み上げます', { text, selectedSpeakerId: this.selectedSpeakerId });
 
@@ -461,5 +463,13 @@ export class GameEngine {
             typeof state.currentStep === 'number' &&
             (state.gameStatus === 'continue' || state.gameStatus === 'gameover' || state.gameStatus === 'gameclear')
         );
+    }
+
+    getIsSpeechEnabled() {
+        return this.isSpeechEnabled;
+    }
+
+    toggleIsSpeechEnabled() {
+        this.isSpeechEnabled = !this.isSpeechEnabled;
     }
 }

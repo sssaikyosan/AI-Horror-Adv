@@ -60,7 +60,6 @@ export class GameUI {
     private audioSetupInfoCloseButton: HTMLElement | null = null;
 
     private isProcessing: boolean = false;
-    private isSpeechEnabled: boolean = true;
 
     private currentSettings: GameSettings;
 
@@ -248,7 +247,8 @@ export class GameUI {
             this.updateDisplayFromState(loadedState);
 
             // ストーリーを読み上げ
-            await this.gameEngine.speakText(loadedState.story);
+            // 読み上げ機能がオンの場合のみ、ロードしたストーリーを読み上げる
+            this.gameEngine.speakText(loadedState.story);
         } else {
             alert('セーブデータが見つかりませんでした。');
         }
@@ -423,12 +423,29 @@ export class GameUI {
             const models = await tempClient.getAvailableModels();
 
             this.settingsModelSelect.innerHTML = ''; // Clear existing options
+            let hasDefaultModel = false;
+
             models.forEach(model => {
                 const option = document.createElement('option');
                 option.value = model;
                 option.textContent = model;
+
+                // Set gemini-2.5-pro as default if it exists
+                if (model === 'gemini-2.5-pro') {
+                    option.selected = true;
+                    hasDefaultModel = true;
+                }
+
                 this.settingsModelSelect!.appendChild(option);
             });
+
+            // If gemini-2.5-pro doesn't exist but we have models, select the first one
+            if (!hasDefaultModel && models.length > 0) {
+                const firstOption = this.settingsModelSelect!.firstChild as HTMLOptionElement;
+                if (firstOption) {
+                    firstOption.selected = true;
+                }
+            }
         } catch (error) {
             console.error('Error loading Gemini models for settings:', error);
         } finally {
@@ -444,15 +461,15 @@ export class GameUI {
         if (speechToggle) {
             this.updateSpeechSwitchState(speechToggle);
             speechToggle.addEventListener('click', () => {
-                this.isSpeechEnabled = !this.isSpeechEnabled;
+                this.gameEngine.toggleIsSpeechEnabled();
                 this.updateSpeechSwitchState(speechToggle);
-                console.log(`読み上げ機能が${this.isSpeechEnabled ? '有効' : '無効'}になりました`);
+                console.log(`読み上げ機能が${this.gameEngine.getIsSpeechEnabled() ? '有効' : '無効'}になりました`);
             });
         }
     }
 
     private updateSpeechSwitchState(switchElement: Element): void {
-        if (this.isSpeechEnabled) {
+        if (this.gameEngine.getIsSpeechEnabled()) {
             switchElement.classList.add('on');
         } else {
             switchElement.classList.remove('on');

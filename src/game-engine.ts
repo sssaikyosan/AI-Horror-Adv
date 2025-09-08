@@ -48,7 +48,7 @@ export class GameEngine {
 1. ゲームステータスとして、ゲーム続行中(continue)、ゲームオーバー(gameover)、ゲームクリア(gameclear)、から適切なものを提示する。
 2. ストーリーを詳細に提供する
 3. ゲーム続行中の場合、プレイヤーの選択肢として3つのアクションか提示する
-4. 各選択肢は短いタイトルと詳細な説明から構成される
+4. 各選択肢は短いタイトルと意図の説明から構成される
 5. 選択肢は現在の状況に関連したものでなければならない
 6. プレイヤーの選択に基づいてストーリーを更新し、物語を進行させ、適切なタイミングでゲームオーバーや、ゲームクリアの提示をする。
 7. 一貫性のあるストーリーを維持する
@@ -62,7 +62,7 @@ export class GameEngine {
     {
       "id": "choice1",
       "text": "選択肢の短いタイトル",
-      "description": "選択肢の簡単な説明"
+      "description": "選択肢の意図の説明"
     }
   ]
 }
@@ -134,7 +134,7 @@ export class GameEngine {
 1. ゲームステータスとして、ゲーム続行中(continue)、ゲームオーバー(gameover)、ゲームクリア(gameclear)、から適切なものを提示する。
 2. ストーリーを詳細に提供する
 3. ゲーム続行中の場合、プレイヤーの選択肢として3つのアクションか提示する
-4. 各選択肢は短いタイトルと詳細な説明から構成される
+4. 各選択肢は短いタイトルと意図の説明から構成される
 5. 選択肢は現在の状況に関連したものでなければならない
 6. プレイヤーの選択に基づいてストーリーを更新し、物語を進行させ、適切なタイミングでゲームオーバーや、ゲームクリアの提示をする。
 7. 一貫性のあるストーリーを維持する
@@ -148,7 +148,7 @@ export class GameEngine {
     {
       "id": "choice1",
       "text": "選択肢の短いタイトル",
-      "description": "選択肢の簡単な説明"
+      "description": "選択肢の意図の説明"
     }
   ]
 }
@@ -200,12 +200,50 @@ export class GameEngine {
         this.gameState.history.push(choiceAction);
         this.gameState.currentStep++;
 
-        // 新しいストーリーと選択肢を生成
-        const messages: LMStudioMessage[] = [
-            { role: 'system', content: this.systemPrompt },
-            { role: 'user', content: this.createChoiceContextPrompt(choiceId) }
-        ];
+        const messages: LMStudioMessage[] = [];
+        messages.push({ role: 'system', content: this.systemPrompt });
+        for (let i = 0; i < this.gameState.history.length; i++) {
+            if (i % 2 === 0) {
+                messages.push({ role: 'assistant', content: this.gameState.history[i] });
+            } else {
+                messages.push({ role: 'user', content: this.gameState.history[i] });
+            }
+        }
 
+        messages.push({
+            role: 'user', content: `プレイヤーが以下のアクションを選択しました：
+"${this.getChoiceActionText(choiceId)}"
+
+現在のゲーム状況：
+ストーリー: ${this.gameState.story}
+
+この選択の結果として、ゲーム続行、ゲームオーバー、ゲームクリアのいずれかを判断してください。その後新しいストーリーを生成し、ゲームステータス及び、ゲームオーバー、ゲームクリアの場合は結果の詳細、ゲーム続行の場合は新しい選択肢を提示してください。レスポンスは必ず以下のJSON形式で返してください：
+ゲーム続行中の場合:
+{
+  "gameStatus": "continue",
+  "story": "現在のストーリー",
+  "choices": [
+    {
+      "id": "choice1",
+      "text": "選択肢の短いタイトル",
+      "description": "選択肢の意図の説明"
+    }
+  ]
+}
+
+ゲームオーバーの場合:
+{
+  "gameStatus": "gameover",
+  "story": "現在のストーリー",
+  "description": "結果の詳細な説明"
+}
+
+ゲークリアの場合:
+{
+  "gameStatus": "gameclear",
+  "story": "現在のストーリー",
+  "description": "結果の詳細な説明"
+}` });
         try {
             let response = '';
             // Check which type of client we're using
@@ -286,40 +324,6 @@ export class GameEngine {
                 error: errorMessage
             };
         }
-    }
-
-    private createChoiceContextPrompt(choiceId: string): string {
-        const choiceAction = this.getChoiceActionText(choiceId);
-        return `プレイヤーが以下のアクションを選択しました：
-\"${choiceAction}\"\r\n\r現在のゲーム状況：\nストーリー: ${this.gameState.story}
-
-この選択の結果として、ゲーム続行、ゲームオーバー、ゲームクリアのいずれかを判断してください。その後新しいストーリーを生成し、ゲームステータス及び、ゲームオーバー、ゲームクリアの場合は結果の詳細、ゲーム続行の場合は新しい選択肢を提示してください。レスポンスは必ず以下のJSON形式で返してください：
-ゲーム続行中の場合:
-{
-  "gameStatus": "continue",
-  "story": "現在のストーリー",
-  "choices": [
-    {
-      "id": "choice1",
-      "text": "選択肢の短いタイトル",
-      "description": "選択肢の簡単な説明"
-    }
-  ]
-}
-
-ゲームオーバーの場合:
-{
-  "gameStatus": "gameover",
-  "story": "現在のストーリー",
-  "description": "結果の詳細な説明"
-}
-
-ゲークリアの場合:
-{
-  "gameStatus": "gameclear",
-  "story": "現在のストーリー",
-  "description": "結果の詳細な説明"
-}`;
     }
 
     private getChoiceActionText(choiceId: string): string {

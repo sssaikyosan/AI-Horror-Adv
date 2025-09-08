@@ -507,6 +507,7 @@ button:focus-visible {
   flex-direction: column;
   gap: 0.5rem;
   margin-bottom: 1.5rem;
+  align-items: flex-start;
 }
 
 .form-group:last-child {
@@ -762,6 +763,21 @@ button:focus-visible {
   border-color: rgba(120, 90, 160, 0.7);
 }
 
+/* Button group for horizontal layout */
+.button-group {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.button-group .secondary-btn {
+  margin: 0;
+  width: auto;
+  flex: 1;
+  max-width: none;
+}
+
 #api-setup-info-modal .modal-body {
   text-align: left;
   padding: 0 1rem;
@@ -783,4 +799,105 @@ button:focus-visible {
   padding: 0.2rem 0.4rem;
   border-radius: 4px;
   font-family: 'Courier New', Courier, monospace;
+}
+
+/* Temperature setting styles - make it smaller and less prominent */
+#temperature,
+#settings-temperature {
+  width: 80px;
+  padding: 0.4rem;
+  font-size: 0.9rem;
+}
+
+#setup-screen .form-group:has(#temperature),
+#settings-modal .form-group:has(#settings-temperature) {
+  opacity: 0.7;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  align-items: flex-start;
+}
+
+#setup-screen .form-group:has(#temperature) label,
+#settings-modal .form-group:has(#settings-temperature) label {
+  font-size: 0.9rem;
+  font-weight: normal;
+  color: rgba(220, 200, 240, 0.7);
+}
+
+
+/* New settings layout styles */
+.settings-section {
+  background: rgba(20, 10, 30, 0.2);
+  border: 1px solid rgba(80, 60, 120, 0.3);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.main-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.main-actions button {
+  flex: 1;
+}
+
+#start-game-btn {
+  margin: 0;
+  max-width: none;
+}
+
+#load-game-btn {
+  background: transparent;
+  border: 1px solid rgba(80, 60, 120, 0.5);
+  color: rgba(220, 200, 240, 0.8);
+  padding: 1rem;
+  font-size: 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+#load-game-btn:hover {
+  background: rgba(80, 60, 120, 0.2);
+  border-color: rgba(120, 90, 160, 0.7);
+}
+
+.form-group-horizontal {
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Ensure settings modal form groups are left-aligned */
+#settings-modal .form-group-horizontal {
+  justify-content: flex-start;
+  width: 100%;
+}
+
+#settings-modal .form-group-horizontal label {
+  text-align: left;
+  min-width: 120px;
+  flex-shrink: 0;
+}
+
+#settings-modal .form-group-horizontal input,
+#settings-modal .form-group-horizontal select {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Specific rules for API settings containers */
+#settings-gemini-api-key-container,
+#settings-openai-api-key-container,
+#settings-api-url-container,
+#settings-model-container {
+  width: 100%;
 }

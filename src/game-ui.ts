@@ -46,6 +46,8 @@ export class GameUI {
     private settingsGeminiApiKeyContainer: HTMLElement | null = null;
     private settingsOpenaiApiKeyContainer: HTMLElement | null = null;
     private settingsTemperatureInput: HTMLInputElement | null = null;
+    private modelLoadingIndicator: HTMLElement | null = null;
+    private voiceLoadingIndicator: HTMLElement | null = null;
 
     // Audio Setup Info Modal
     private audioSetupInfoModal: HTMLElement | null = null;
@@ -97,6 +99,8 @@ export class GameUI {
         this.settingsGeminiApiKeyContainer = document.querySelector('#settings-gemini-api-key-container');
         this.settingsOpenaiApiKeyContainer = document.querySelector('#settings-openai-api-key-container');
         this.settingsTemperatureInput = document.querySelector('#settings-temperature') as HTMLInputElement | null;
+        this.modelLoadingIndicator = document.querySelector('#model-loading');
+        this.voiceLoadingIndicator = document.querySelector('#voice-loading');
 
         // Audio Setup Info Modal elements
         this.audioSetupInfoModal = document.querySelector('#audio-setup-info-modal');
@@ -148,15 +152,27 @@ export class GameUI {
         if (this.settingsOpenaiApiKeyInput) this.settingsOpenaiApiKeyInput.value = this.currentSettings.apiType === 'openai' ? this.currentSettings.apiKey : '';
         if (this.settingsTemperatureInput) this.settingsTemperatureInput.value = this.currentSettings.temperature.toString();
 
-        // Load dynamic options
-        await this.loadSpeakersToSettings();
-        if (this.settingsVoiceSelect) this.settingsVoiceSelect.value = this.currentSettings.speakerId.toString();
-
-        await this.loadGeminiModelsToSettings();
-        if (this.settingsModelSelect) this.settingsModelSelect.value = this.currentSettings.model;
-
-        this.updateSettingsUI();
+        // Show the modal immediately
         this.settingsModal.style.display = 'flex';
+        
+        // Update UI immediately to show/hide relevant fields
+        this.updateSettingsUI();
+
+        // Load dynamic options in the background
+        this.loadSpeakersToSettings().then(() => {
+            if (this.settingsVoiceSelect) {
+                this.settingsVoiceSelect.value = this.currentSettings.speakerId.toString();
+            }
+        });
+
+        // Only load Gemini models if using Gemini API and API key is provided
+        if (this.currentSettings.apiType === 'gemini' && this.currentSettings.apiKey) {
+            this.loadGeminiModelsToSettings().then(() => {
+                if (this.settingsModelSelect) {
+                    this.settingsModelSelect.value = this.currentSettings.model;
+                }
+            });
+        }
     }
 
     private closeSettingsModal(): void {
@@ -233,10 +249,21 @@ export class GameUI {
     private async loadSpeakersToSettings(): Promise<void> {
         if (!this.settingsVoiceSelect) return;
         
+        // Show loading indicator
+        if (this.voiceLoadingIndicator) {
+            this.voiceLoadingIndicator.style.display = 'flex';
+        }
+        
         try {
             const voiceClient = new VoicevoxClient();
             const isAvailable = await voiceClient.isServerAvailable();
-            if (!isAvailable) return;
+            if (!isAvailable) {
+                // Hide loading indicator
+                if (this.voiceLoadingIndicator) {
+                    this.voiceLoadingIndicator.style.display = 'none';
+                }
+                return;
+            }
 
             const speakers = await voiceClient.getAvailableSpeakers();
             this.settingsVoiceSelect.innerHTML = ''; // Clear existing options
@@ -248,15 +275,31 @@ export class GameUI {
             });
         } catch (error) {
             console.error('Error loading speakers for settings:', error);
+        } finally {
+            // Hide loading indicator
+            if (this.voiceLoadingIndicator) {
+                this.voiceLoadingIndicator.style.display = 'none';
+            }
         }
     }
 
     private async loadGeminiModelsToSettings(): Promise<void> {
         if (!this.settingsGeminiApiKeyInput || !this.settingsModelSelect) return;
         
+        // Show loading indicator
+        if (this.modelLoadingIndicator) {
+            this.modelLoadingIndicator.style.display = 'flex';
+        }
+        
         try {
             const apiKey = this.settingsGeminiApiKeyInput.value;
-            if (!apiKey) return;
+            if (!apiKey) {
+                // Hide loading indicator
+                if (this.modelLoadingIndicator) {
+                    this.modelLoadingIndicator.style.display = 'none';
+                }
+                return;
+            }
 
             const tempClient = new GeminiClient(apiKey);
             const models = await tempClient.getAvailableModels();
@@ -270,6 +313,11 @@ export class GameUI {
             });
         } catch (error) {
             console.error('Error loading Gemini models for settings:', error);
+        } finally {
+            // Hide loading indicator
+            if (this.modelLoadingIndicator) {
+                this.modelLoadingIndicator.style.display = 'none';
+            }
         }
     }
 

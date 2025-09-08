@@ -96,9 +96,7 @@ export class GameEngine {
             } else {
                 initialScenarioJson = await (this.client as LMStudioClient).generateInitialScenario(this.temperature);
             }
-            console.log(initialScenarioJson);
             const withoutResult = initialScenarioJson.replace(/<think>[\s\S]*?<\/think>/g, '');
-            console.log(withoutResult);
             const jsonMatch = withoutResult.match(/\{[\s\S]*\}/);
             if (!jsonMatch) {
                 throw new Error('Response does not contain valid JSON');
@@ -172,7 +170,6 @@ export class GameEngine {
 
             // 1. <think>タグ内の内容を除去
             const withoutResult = response.replace(/<think>[\s\S]*?<\/think>/g, '');
-            console.log(withoutResult);
             // 2. JSONオブジェクトを抽出する正規表現
             const jsonMatch = withoutResult.match(/\{[\s\S]*\}/);
             if (!jsonMatch) {

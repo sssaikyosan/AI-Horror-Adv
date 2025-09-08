@@ -154,7 +154,7 @@ export class GameUI {
 
         // Show the modal immediately
         this.settingsModal.style.display = 'flex';
-        
+
         // Update UI immediately to show/hide relevant fields
         this.updateSettingsUI();
 
@@ -194,7 +194,7 @@ export class GameUI {
     }
 
     private saveSettings(): void {
-        if (!this.settingsApiTypeSelect || !this.settingsGeminiApiKeyInput || !this.settingsOpenaiApiKeyInput || !this.settingsApiUrlInput || 
+        if (!this.settingsApiTypeSelect || !this.settingsGeminiApiKeyInput || !this.settingsOpenaiApiKeyInput || !this.settingsApiUrlInput ||
             !this.settingsModelSelect || !this.settingsVoiceSelect || !this.settingsTemperatureInput) return;
 
         const newSettings: GameSettings = {
@@ -230,9 +230,9 @@ export class GameUI {
     }
 
     private updateSettingsUI(): void {
-        if (!this.settingsApiTypeSelect || !this.settingsApiUrlContainer || !this.settingsModelContainer || 
+        if (!this.settingsApiTypeSelect || !this.settingsApiUrlContainer || !this.settingsModelContainer ||
             !this.settingsGeminiApiKeyContainer || !this.settingsOpenaiApiKeyContainer) return;
-        
+
         if (this.settingsApiTypeSelect.value === 'gemini') {
             this.settingsApiUrlContainer.style.display = 'none';
             this.settingsModelContainer.style.display = 'block';
@@ -248,12 +248,12 @@ export class GameUI {
 
     private async loadSpeakersToSettings(): Promise<void> {
         if (!this.settingsVoiceSelect) return;
-        
+
         // Show loading indicator
         if (this.voiceLoadingIndicator) {
             this.voiceLoadingIndicator.style.display = 'flex';
         }
-        
+
         try {
             const voiceClient = new VoicevoxClient();
             const isAvailable = await voiceClient.isServerAvailable();
@@ -285,12 +285,12 @@ export class GameUI {
 
     private async loadGeminiModelsToSettings(): Promise<void> {
         if (!this.settingsGeminiApiKeyInput || !this.settingsModelSelect) return;
-        
+
         // Show loading indicator
         if (this.modelLoadingIndicator) {
             this.modelLoadingIndicator.style.display = 'flex';
         }
-        
+
         try {
             const apiKey = this.settingsGeminiApiKeyInput.value;
             if (!apiKey) {
@@ -387,7 +387,6 @@ export class GameUI {
         this.setProcessingState(true);
         try {
             const { sceneDescription, choices } = await this.gameEngine.startGame();
-            console.log(sceneDescription);
             this.updateDisplay(choices);
         } catch (error) {
             console.error('Error initializing game:', error);
@@ -415,7 +414,7 @@ export class GameUI {
         } else {
             this.sceneElement.textContent = gameState.sceneDescription;
         }
-        
+
         // 選択肢を表示
         this.displayChoicesFromState(gameState);
     }
@@ -438,7 +437,7 @@ export class GameUI {
 
     private displayChoicesFromState(gameState: GameState): void {
         this.choicesContainer.innerHTML = '';
-        
+
         // ゲームが終了している場合は再開の選択肢を表示
         if (gameState.gameStatus === 'gameover' || gameState.gameStatus === 'gameclear') {
             const restartChoice = { id: 'restart', text: '最初からやり直す', description: 'ゲームを最初からやり直します' };
@@ -450,7 +449,7 @@ export class GameUI {
             this.choicesContainer.appendChild(choiceButton);
             return;
         }
-        
+
         // gameStateから選択肢を取得
         const choices = gameState.choices || [];
         choices.forEach((choice, index) => {

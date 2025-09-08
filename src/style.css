@@ -563,6 +563,31 @@ button:focus-visible {
   transform: translateY(-2px);
 }
 
+#confirm-settings-btn {
+  padding: 1rem;
+  font-size: 1.2rem;
+  background: linear-gradient(135deg, rgba(80, 60, 120, 0.4) 0%, rgba(50, 40, 90, 0.3) 100%);
+  color: rgba(220, 200, 240, 0.95);
+  border: 2px solid rgba(80, 60, 120, 0.5);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+  margin: 1rem auto 0 auto;
+  display: block;
+  width: 100%;
+  max-width: 300px;
+}
+
+#confirm-settings-btn:hover {
+  background: linear-gradient(135deg, rgba(100, 80, 150, 0.5) 0%, rgba(70, 60, 120, 0.4) 100%);
+  border-color: rgba(120, 90, 160, 0.7);
+  box-shadow: 0 4px 16px rgba(80, 60, 120, 0.4), inset 0 0 10px rgba(100, 70, 150, 0.3);
+  transform: translateY(-2px);
+}
+
 .log-panel {
   position: absolute;
   top: 5%;
@@ -800,29 +825,6 @@ button:focus-visible {
   padding: 0.2rem 0.4rem;
   border-radius: 4px;
   font-family: 'Courier New', Courier, monospace;
-}
-
-/* Temperature setting styles - make it smaller and less prominent */
-#temperature,
-#settings-temperature {
-  width: 80px;
-  padding: 0.4rem;
-  font-size: 0.9rem;
-}
-
-#setup-screen .form-group:has(#temperature),
-#settings-modal .form-group:has(#settings-temperature) {
-  opacity: 0.7;
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
-  align-items: flex-start;
-}
-
-#setup-screen .form-group:has(#temperature) label,
-#settings-modal .form-group:has(#settings-temperature) label {
-  font-size: 0.9rem;
-  font-weight: normal;
-  color: rgba(220, 200, 240, 0.7);
 }
 
 

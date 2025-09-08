@@ -10,7 +10,6 @@ interface GameSettings {
     apiUrl: string;
     model: string;
     speakerId: number;
-    temperature: number;
 }
 
 export class GameUI {
@@ -30,11 +29,8 @@ export class GameUI {
     private backToTitleButton: HTMLElement | null = null;
     private errorModalCloseButton: HTMLElement | null = null;
 
-    // Settings Modal
-    private settingsModal: HTMLElement | null = null;
+    // Settings elements
     private settingsToggleButton: HTMLElement | null = null;
-    private settingsSaveButton: HTMLElement | null = null;
-    private settingsCancelButton: HTMLElement | null = null;
     private settingsApiTypeSelect: HTMLSelectElement | null = null;
     private settingsApiUrlInput: HTMLInputElement | null = null;
     private settingsGeminiApiKeyInput: HTMLInputElement | null = null;
@@ -45,9 +41,12 @@ export class GameUI {
     private settingsApiUrlContainer: HTMLElement | null = null;
     private settingsGeminiApiKeyContainer: HTMLElement | null = null;
     private settingsOpenaiApiKeyContainer: HTMLElement | null = null;
-    private settingsTemperatureInput: HTMLInputElement | null = null;
     private modelLoadingIndicator: HTMLElement | null = null;
     private voiceLoadingIndicator: HTMLElement | null = null;
+
+    private apiSetupInfoModal: HTMLElement | null = null;
+    private apiSetupInfoButton: HTMLElement | null = null;
+    private apiSetupInfoCloseButton: HTMLElement | null = null;
 
     // Audio Setup Info Modal
     private audioSetupInfoModal: HTMLElement | null = null;
@@ -85,22 +84,22 @@ export class GameUI {
 
         // Settings elements
         this.settingsToggleButton = document.querySelector('#settings-toggle-btn');
-        this.settingsModal = document.querySelector('#settings-modal');
-        this.settingsSaveButton = document.querySelector('#settings-save-btn');
-        this.settingsCancelButton = document.querySelector('#settings-cancel-btn');
-        this.settingsApiTypeSelect = document.querySelector('#settings-api-type') as HTMLSelectElement | null;
-        this.settingsApiUrlInput = document.querySelector('#settings-api-url') as HTMLInputElement | null;
-        this.settingsGeminiApiKeyInput = document.querySelector('#settings-gemini-api-key') as HTMLInputElement | null;
-        this.settingsOpenaiApiKeyInput = document.querySelector('#settings-openai-api-key') as HTMLInputElement | null;
-        this.settingsModelSelect = document.querySelector('#settings-model-select') as HTMLSelectElement | null;
-        this.settingsVoiceSelect = document.querySelector('#settings-voice-select') as HTMLSelectElement | null;
-        this.settingsModelContainer = document.querySelector('#settings-model-container');
-        this.settingsApiUrlContainer = document.querySelector('#settings-api-url-container');
-        this.settingsGeminiApiKeyContainer = document.querySelector('#settings-gemini-api-key-container');
-        this.settingsOpenaiApiKeyContainer = document.querySelector('#settings-openai-api-key-container');
-        this.settingsTemperatureInput = document.querySelector('#settings-temperature') as HTMLInputElement | null;
+        this.settingsApiTypeSelect = document.querySelector('#api-type') as HTMLSelectElement | null;
+        this.settingsApiUrlInput = document.querySelector('#api-url') as HTMLInputElement | null;
+        this.settingsGeminiApiKeyInput = document.querySelector('#gemini-api-key') as HTMLInputElement | null;
+        this.settingsOpenaiApiKeyInput = document.querySelector('#openai-api-key') as HTMLInputElement | null;
+        this.settingsModelSelect = document.querySelector('#model-select') as HTMLSelectElement | null;
+        this.settingsVoiceSelect = document.querySelector('#voice-select') as HTMLSelectElement | null;
+        this.settingsModelContainer = document.querySelector('#model-container');
+        this.settingsApiUrlContainer = document.querySelector('#api-url-container');
+        this.settingsGeminiApiKeyContainer = document.querySelector('#gemini-api-key-container');
+        this.settingsOpenaiApiKeyContainer = document.querySelector('#openai-api-key-container');
         this.modelLoadingIndicator = document.querySelector('#model-loading');
         this.voiceLoadingIndicator = document.querySelector('#voice-loading');
+
+        this.apiSetupInfoModal = document.querySelector('#api-setup-info-modal');
+        this.apiSetupInfoButton = document.querySelector('#api-setup-info-btn');
+        this.apiSetupInfoCloseButton = document.querySelector('#api-setup-info-close-btn');
 
         // Audio Setup Info Modal elements
         this.audioSetupInfoModal = document.querySelector('#audio-setup-info-modal');
@@ -128,11 +127,35 @@ export class GameUI {
             if (event.target === this.errorModal) this.hideErrorPopup();
         });
 
-        // Settings modal
-        this.settingsToggleButton?.addEventListener('click', () => this.openSettingsModal());
-        this.settingsCancelButton?.addEventListener('click', () => this.closeSettingsModal());
-        this.settingsSaveButton?.addEventListener('click', () => this.saveSettings());
+        // Settings button
+        this.settingsToggleButton?.addEventListener('click', () => this.openSettings());
         this.settingsApiTypeSelect?.addEventListener('change', () => this.updateSettingsUI());
+
+        // Confirm settings button
+        const confirmSettingsButton = document.querySelector('#confirm-settings-btn');
+        confirmSettingsButton?.addEventListener('click', () => this.saveSettingsAndReturnToGame());
+
+        // Title screen buttons
+        const startButton = document.querySelector('#start-game-btn');
+        const loadButton = document.querySelector('#load-game-btn');
+        const saveAndQuitButton = document.querySelector('#save-and-quit-btn');
+
+        startButton?.addEventListener('click', () => this.startGameFromTitle());
+        loadButton?.addEventListener('click', () => this.loadGameFromTitle());
+        saveAndQuitButton?.addEventListener('click', () => this.saveAndBackToTitle());
+
+        this.apiSetupInfoButton?.addEventListener('click', () => {
+            this.openApiSetupInfoModal();
+        });
+
+        this.apiSetupInfoCloseButton?.addEventListener('click', () => {
+            this.closeApiSetupInfoModal();
+        });
+
+        this.apiSetupInfoModal?.addEventListener('click', (event) => {
+            if (event.target === this.apiSetupInfoModal) this.closeApiSetupInfoModal();
+        });
+
 
         // Audio setup info modal
         this.audioSetupInfoButton?.addEventListener('click', () => this.openAudioSetupInfoModal());
@@ -142,42 +165,98 @@ export class GameUI {
         });
     }
 
-    private async openSettingsModal(): Promise<void> {
-        if (!this.settingsModal) return;
-
-        // Load current settings into the modal
-        if (this.settingsApiTypeSelect) this.settingsApiTypeSelect.value = this.currentSettings.apiType;
-        if (this.settingsApiUrlInput) this.settingsApiUrlInput.value = this.currentSettings.apiUrl;
-        if (this.settingsGeminiApiKeyInput) this.settingsGeminiApiKeyInput.value = this.currentSettings.apiType === 'gemini' ? this.currentSettings.apiKey : '';
-        if (this.settingsOpenaiApiKeyInput) this.settingsOpenaiApiKeyInput.value = this.currentSettings.apiType === 'openai' ? this.currentSettings.apiKey : '';
-        if (this.settingsTemperatureInput) this.settingsTemperatureInput.value = this.currentSettings.temperature.toString();
-
-        // Show the modal immediately
-        this.settingsModal.style.display = 'flex';
-
-        // Update UI immediately to show/hide relevant fields
-        this.updateSettingsUI();
-
-        // Load dynamic options in the background
-        this.loadSpeakersToSettings().then(() => {
-            if (this.settingsVoiceSelect) {
-                this.settingsVoiceSelect.value = this.currentSettings.speakerId.toString();
-            }
-        });
-
-        // Only load Gemini models if using Gemini API and API key is provided
-        if (this.currentSettings.apiType === 'gemini' && this.currentSettings.apiKey) {
-            this.loadGeminiModelsToSettings().then(() => {
-                if (this.settingsModelSelect) {
-                    this.settingsModelSelect.value = this.currentSettings.model;
-                }
-            });
+    private openSettings(): void {
+        // When opening settings from game, show only confirm button
+        this.gameScreen.style.display = 'none';
+        this.setupScreen.style.display = 'flex';
+        // Hide title screen specific buttons
+        const titleButtons = document.querySelector('.main-actions');
+        if (titleButtons) {
+            (titleButtons as HTMLElement).style.display = 'none';
+        }
+        // Show confirm button
+        const settingButtons = document.querySelector('.setting-actions');
+        if (settingButtons) {
+            (settingButtons as HTMLElement).style.display = 'flex';
         }
     }
 
-    private closeSettingsModal(): void {
-        if (this.settingsModal) {
-            this.settingsModal.style.display = 'none';
+    private saveSettingsAndReturnToGame(): void {
+        this.saveSettings();
+    }
+
+    private startGameFromTitle(): void {
+        if (this.saveSettings()) {
+            this.startGame();
+        }
+    }
+
+    private loadGameFromTitle(): void {
+        // When loading from title, ensure title buttons are visible
+        const titleButtons = document.querySelector('.main-actions');
+        if (titleButtons) {
+            (titleButtons as HTMLElement).style.display = 'flex';
+        }
+        // Hide confirm button
+        const confirmButton = document.querySelector('#confirm-settings-btn');
+        if (confirmButton) {
+            (confirmButton as HTMLElement).style.display = 'none';
+        }
+        // Load the game
+        this.loadGame();
+    }
+
+    private saveAndBackToTitle() {
+        this.gameEngine.saveGame();
+        this.gameScreen.style.display = 'none';
+        this.setupScreen.style.display = 'flex';
+        const titleButtons = document.querySelector('.main-actions');
+        if (titleButtons) {
+            (titleButtons as HTMLElement).style.display = 'flex';
+        }
+        // Show confirm button
+        const settingButtons = document.querySelector('.setting-actions');
+        if (settingButtons) {
+            (settingButtons as HTMLElement).style.display = 'none';
+        }
+    }
+
+    private async startGame(): Promise<void> {
+        console.log('GameUI: ゲームを開始します');
+        this.setProcessingState(true);
+        try {
+            const result = await this.gameEngine.startGame();
+            this.updateDisplay(result.choices);
+        } catch (error) {
+            console.error('Error starting game:', error);
+            this.showErrorPopup(error instanceof Error ? error.message : 'ゲームの開始に失敗しました。設定を確認してもう一度お試しください。', 'fatal');
+        } finally {
+            this.setProcessingState(false);
+        }
+    }
+
+    private async loadGame(): Promise<void> {
+        const loadedState = this.gameEngine.loadGame();
+        if (loadedState) {
+            // ゲームUIを更新
+            this.updateDisplayFromState(loadedState);
+
+            // 情景描写を読み上げ
+            await this.gameEngine.speakText(loadedState.sceneDescription);
+        } else {
+            alert('セーブデータが見つかりませんでした。');
+        }
+    }
+
+    private openApiSetupInfoModal(): void {
+        if (this.apiSetupInfoModal) {
+            this.apiSetupInfoModal.style.display = 'flex';
+        }
+    }
+
+    private closeApiSetupInfoModal(): void {
+        if (this.apiSetupInfoModal) {
+            this.apiSetupInfoModal.style.display = 'none';
         }
     }
 
@@ -193,17 +272,16 @@ export class GameUI {
         }
     }
 
-    private saveSettings(): void {
+    private saveSettings(): boolean {
         if (!this.settingsApiTypeSelect || !this.settingsGeminiApiKeyInput || !this.settingsOpenaiApiKeyInput || !this.settingsApiUrlInput ||
-            !this.settingsModelSelect || !this.settingsVoiceSelect || !this.settingsTemperatureInput) return;
+            !this.settingsModelSelect || !this.settingsVoiceSelect) return false;
 
         const newSettings: GameSettings = {
             apiType: this.settingsApiTypeSelect.value,
             apiKey: this.settingsApiTypeSelect.value === 'gemini' ? this.settingsGeminiApiKeyInput.value : this.settingsOpenaiApiKeyInput.value,
             apiUrl: this.settingsApiUrlInput.value,
             model: this.settingsModelSelect.value,
-            speakerId: parseInt(this.settingsVoiceSelect.value, 10),
-            temperature: parseFloat(this.settingsTemperatureInput.value)
+            speakerId: parseInt(this.settingsVoiceSelect.value, 10)
         };
 
         // Update current settings
@@ -214,7 +292,7 @@ export class GameUI {
         if (newSettings.apiType === 'gemini') {
             if (!newSettings.apiKey) {
                 this.showErrorPopup("Gemini APIキーが必要です。", 'transient');
-                return;
+                return false;
             }
             newClient = new GeminiClient(newSettings.apiKey, newSettings.model);
         } else {
@@ -224,9 +302,12 @@ export class GameUI {
         // Update the game engine with the new client and speaker
         this.gameEngine.updateClient(newClient);
         this.gameEngine.updateSpeaker(newSettings.speakerId);
-        this.gameEngine.updateTemperature(newSettings.temperature);
 
-        this.closeSettingsModal();
+        // Switch back to game screen
+        this.setupScreen.style.display = 'none';
+        this.gameScreen.style.display = 'block';
+
+        return true
     }
 
     private updateSettingsUI(): void {
@@ -243,6 +324,31 @@ export class GameUI {
             this.settingsModelContainer.style.display = 'none';
             this.settingsGeminiApiKeyContainer.style.display = 'none';
             this.settingsOpenaiApiKeyContainer.style.display = 'block';
+        }
+    }
+
+    public async initializeSettings(): Promise<void> {
+        // Initialize settings UI
+        if (this.settingsApiTypeSelect) this.settingsApiTypeSelect.value = this.currentSettings.apiType;
+        if (this.settingsApiUrlInput) this.settingsApiUrlInput.value = this.currentSettings.apiUrl;
+        if (this.settingsGeminiApiKeyInput) this.settingsGeminiApiKeyInput.value = this.currentSettings.apiType === 'gemini' ? this.currentSettings.apiKey : '';
+        if (this.settingsOpenaiApiKeyInput) this.settingsOpenaiApiKeyInput.value = this.currentSettings.apiType === 'openai' ? this.currentSettings.apiKey : '';
+
+        // Update UI immediately to show/hide relevant fields
+        this.updateSettingsUI();
+
+        // Load dynamic options
+        await this.loadSpeakersToSettings();
+        if (this.settingsVoiceSelect) {
+            this.settingsVoiceSelect.value = this.currentSettings.speakerId.toString();
+        }
+
+        // Only load Gemini models if using Gemini API and API key is provided
+        if (this.currentSettings.apiType === 'gemini' && this.currentSettings.apiKey) {
+            await this.loadGeminiModelsToSettings();
+            if (this.settingsModelSelect) {
+                this.settingsModelSelect.value = this.currentSettings.model;
+            }
         }
     }
 

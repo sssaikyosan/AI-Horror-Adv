@@ -59,19 +59,12 @@ export class GeminiClient {
         return geminiContents;
     }
 
-    async sendMessage(messages: LMStudioMessage[], temperature?: number): Promise<string> {
+    async sendMessage(messages: LMStudioMessage[]): Promise<string> {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${this.apiKey}`;
 
         const requestBody: any = {
             contents: this.transformMessagesToGemini(messages),
         };
-
-        // Add temperature if provided
-        if (temperature !== undefined) {
-            requestBody.generationConfig = {
-                temperature: temperature
-            };
-        }
 
         try {
             const response = await fetch(url, {
@@ -93,40 +86,6 @@ export class GeminiClient {
             console.error('Gemini API error:', error);
             throw new Error(`Gemini API request failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
-    }
-
-    async generateInitialScenario(temperature?: number): Promise<string> {
-        const messages: LMStudioMessage[] = [
-            {
-                role: 'system',
-                content: `あなたはホラーゲームのゲームマスターです。以下のルールに従って、プレイヤーが没入できるような開始シナリオを生成してください。：
-
-1. 情景描写を詳細に提供する
-2. プレイヤーの選択肢として3つのアクションを提示する
-3. 各選択肢は短いタイトルと詳細な説明から構成される
-4. 選択肢は現在の状況に関連したものでなければならない
-5. プレイヤーの選択に基づいて情景描写を更新し、物語を進行させる
-6. 一貫性のあるストーリーを維持する
-
-レスポンスは必ず以下のJSON形式で返してください：
-{
-  "sceneDescription": "現在の情景描写",
-  "choices": [
-    {
-      "id": "choice1",
-      "text": "選択肢の短いタイトル",
-      "description": "選択肢の詳細な説明"
-    }
-  ]
-}`
-            },
-            {
-                role: 'user',
-                content: `プレイヤーの最初の状況設定と、最初の選択肢をJSON形式で生成してください。`
-            }
-        ];
-
-        return await this.sendMessage(messages, temperature);
     }
 
     async getAvailableModels(): Promise<string[]> {

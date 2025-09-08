@@ -28,9 +28,8 @@ export class GameEngine {
     private bgmManager: BGMManager;
     private voicevoxClient: VoicevoxClient;
     private selectedSpeakerId: number;
-    private temperature: number = 0.2;
 
-    constructor(client: LMStudioClient | GeminiClient, selectedSpeakerId: number = 0, temperature: number = 0.2) {
+    constructor(client: LMStudioClient | GeminiClient, selectedSpeakerId: number = 0) {
         this.client = client;
         this.gameState = {
             sceneDescription: '',
@@ -42,7 +41,6 @@ export class GameEngine {
         this.bgmManager = new BGMManager();
         this.voicevoxClient = new VoicevoxClient();
         this.selectedSpeakerId = selectedSpeakerId;
-        this.temperature = temperature;
 
         this.systemPrompt = `あなたはホラーゲームのゲームマスターです。
 以下のルールに従って不気味で恐怖を煽るゲームを進行してください：
@@ -89,14 +87,8 @@ export class GameEngine {
         // BGMを再生
         this.bgmManager.play();
         try {
-            let initialScenarioJson = '';
-            // Check which type of client we're using
-            if (this.client instanceof GeminiClient) {
-                initialScenarioJson = await (this.client as GeminiClient).generateInitialScenario(this.temperature);
-            } else {
-                initialScenarioJson = await (this.client as LMStudioClient).generateInitialScenario(this.temperature);
-            }
-            const withoutResult = initialScenarioJson.replace(/<think>[\s\S]*?<\/think>/g, '');
+            let initialScenarioJson = await this.generateInitialScenario();
+            const withoutResult = initialScenarioJson.replace(/<thinking>[\s\S]*?<\/thinking>/g, '');
             const jsonMatch = withoutResult.match(/\{[\s\S]*\}/);
             if (!jsonMatch) {
                 throw new Error('Response does not contain valid JSON');
@@ -133,6 +125,63 @@ export class GameEngine {
         }
     }
 
+    async generateInitialScenario(): Promise<string> {
+        const messages: LMStudioMessage[] = [
+            {
+                role: 'system',
+                content: `あなたはホラーゲームのゲームマスターです。
+以下のルールに従って、プレイヤーが没入できるような開始シナリオを生成してください。：
+
+1. ゲームステータスとして、ゲーム続行中(continue)、ゲームオーバー(gameover)、ゲームクリア(gameclear)、から適切なものを提示する。
+2. 情景描写を詳細に提供する
+3. ゲーム続行中の場合、プレイヤーの選択肢として3つのアクションか提示する
+4. 各選択肢は短いタイトルと詳細な説明から構成される
+5. 選択肢は現在の状況に関連したものでなければならない
+6. プレイヤーの選択に基づいて情景描写を更新し、物語を進行させ、適切なタイミングでゲームオーバーや、ゲームクリアの提示ができるような構成にする。
+7. 一貫性のあるストーリーを維持する
+
+レスポンスは必ず以下のJSON形式で返してください：
+ゲーム続行中の場合:
+{
+  "gameStatus": "continue",
+  "sceneDescription": "現在の情景描写",
+  "choices": [
+    {
+      "id": "choice1",
+      "text": "選択肢の短いタイトル",
+      "description": "選択肢の詳細な説明"
+    }
+  ]
+}
+
+ゲームオーバーの場合:
+{
+  "gameStatus": "gameover",
+  "sceneDescription": "現在の情景描写",
+  "description": "結果の詳細な説明"
+}
+
+ゲークリアの場合:
+{
+  "gameStatus": "gameclear",
+  "sceneDescription": "現在の情景描写",
+  "description": "結果の詳細な説明"
+}`
+            },
+            {
+                role: 'user',
+                content: `プレイヤーの最初の状況設定と、最初の選択肢をJSON形式で生成してください。`
+            }
+        ];
+        let initialScenarioJson = '';
+        if (this.client instanceof GeminiClient) {
+            initialScenarioJson = await (this.client as GeminiClient).sendMessage(messages);
+        } else {
+            initialScenarioJson = await (this.client as LMStudioClient).sendMessage(messages);
+        }
+        return initialScenarioJson;
+    }
+
     async makeChoice(choiceId: string): Promise<{ updatedScene: string; newChoices: Choice[]; error?: string }> {
         console.log('GameEngine: 選択肢を処理します', { choiceId });
 
@@ -162,14 +211,14 @@ export class GameEngine {
             let response = '';
             // Check which type of client we're using
             if (this.client instanceof GeminiClient) {
-                response = await (this.client as GeminiClient).sendMessage(messages, this.temperature);
+                response = await (this.client as GeminiClient).sendMessage(messages);
             } else {
-                response = await (this.client as LMStudioClient).sendMessage(messages, undefined, { temperature: this.temperature });
+                response = await (this.client as LMStudioClient).sendMessage(messages, undefined);
             }
             console.log('GameEngine: LLMからのレスポンス', response);
 
             // 1. <think>タグ内の内容を除去
-            const withoutResult = response.replace(/<think>[\s\S]*?<\/think>/g, '');
+            const withoutResult = response.replace(/<thinking>[\s\S]*?<\/thinking>/g, '');
             // 2. JSONオブジェクトを抽出する正規表現
             const jsonMatch = withoutResult.match(/\{[\s\S]*\}/);
             if (!jsonMatch) {
@@ -314,11 +363,6 @@ export class GameEngine {
     updateSpeaker(speakerId: number): void {
         this.selectedSpeakerId = speakerId;
         console.log('GameEngine speaker updated to:', speakerId);
-    }
-
-    updateTemperature(temperature: number): void {
-        this.temperature = temperature;
-        console.log('GameEngine temperature updated to:', temperature);
     }
 
     /**

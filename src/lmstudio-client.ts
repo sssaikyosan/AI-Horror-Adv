@@ -6,7 +6,6 @@ export interface LMStudioMessage {
 export interface LMStudioCompletionRequest {
     model: string;
     messages: LMStudioMessage[];
-    temperature?: number;
     max_tokens?: number;
     stream?: boolean;
 }
@@ -73,14 +72,12 @@ export class LMStudioClient {
         onToken?: (token: string) => void,
         options?: {
             model?: string;
-            temperature?: number;
             max_tokens?: number;
         }
     ): Promise<string> {
         const request: LMStudioCompletionRequest = {
             model: options?.model || this.defaultModel,
             messages,
-            temperature: options?.temperature ?? 0.2,
             max_tokens: options?.max_tokens,
             stream: !!onToken
         };
@@ -193,57 +190,5 @@ export class LMStudioClient {
             console.error('Failed to get models:', error);
             return [this.defaultModel];
         }
-    }
-
-    async generateInitialScenario(temperature?: number): Promise<string> {
-        const messages: LMStudioMessage[] = [
-            {
-                role: 'system',
-                content: `あなたはホラーゲームのゲームマスターです。
-以下のルールに従って、プレイヤーが没入できるような開始シナリオを生成してください。：
-
-1. ゲームステータスとして、ゲーム続行中(continue)、ゲームオーバー(gameover)、ゲームクリア(gameclear)、から適切なものを提示する。
-2. 情景描写を詳細に提供する
-3. ゲーム続行中の場合、プレイヤーの選択肢として3つのアクションか提示する
-4. 各選択肢は短いタイトルと詳細な説明から構成される
-5. 選択肢は現在の状況に関連したものでなければならない
-6. プレイヤーの選択に基づいて情景描写を更新し、物語を進行させ、適切なタイミングでゲームオーバーや、ゲームクリアの提示ができるような構成にする。
-7. 一貫性のあるストーリーを維持する
-
-レスポンスは必ず以下のJSON形式で返してください：
-ゲーム続行中の場合:
-{
-  "gameStatus": "continue",
-  "sceneDescription": "現在の情景描写",
-  "choices": [
-    {
-      "id": "choice1",
-      "text": "選択肢の短いタイトル",
-      "description": "選択肢の詳細な説明"
-    }
-  ]
-}
-
-ゲームオーバーの場合:
-{
-  "gameStatus": "gameover",
-  "sceneDescription": "現在の情景描写",
-  "description": "結果の詳細な説明"
-}
-
-ゲークリアの場合:
-{
-  "gameStatus": "gameclear",
-  "sceneDescription": "現在の情景描写",
-  "description": "結果の詳細な説明"
-}`
-            },
-            {
-                role: 'user',
-                content: `プレイヤーの最初の状況設定と、最初の選択肢をJSON形式で生成してください。`
-            }
-        ];
-
-        return await this.sendMessage(messages, undefined, { temperature: temperature });
     }
 }

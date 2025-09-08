@@ -351,8 +351,6 @@ export class GameEngine {
         };
         // BGMを停止
         this.bgmManager.stop();
-        // ローカルストレージからも削除
-        localStorage.removeItem('aiHorrorGameState');
     }
 
     updateClient(newClient: LMStudioClient | GeminiClient): void {

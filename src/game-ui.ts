@@ -16,6 +16,7 @@ export class GameUI {
     private gameEngine: GameEngine;
     private sceneElement: HTMLElement;
     private choicesContainer: HTMLElement;
+    private titleScreen: HTMLElement;
     private setupScreen: HTMLElement;
     private gameScreen: HTMLElement;
 
@@ -68,6 +69,7 @@ export class GameUI {
         // Main UI elements
         this.sceneElement = document.querySelector('#scene-description')!;
         this.choicesContainer = document.querySelector('#choices-container')!;
+        this.titleScreen = document.querySelector('#title-screen')!;
         this.setupScreen = document.querySelector('#setup-screen')!;
         this.gameScreen = document.querySelector('#game-screen')!;
 
@@ -119,6 +121,7 @@ export class GameUI {
         this.backToTitleButton?.addEventListener('click', () => {
             this.hideErrorPopup();
             this.gameScreen.style.display = 'none';
+            this.titleScreen.style.display = 'flex';
             this.setupScreen.style.display = 'flex';
             this.resetGame();
         });
@@ -208,7 +211,9 @@ export class GameUI {
 
     private saveAndBackToTitle() {
         this.gameEngine.saveGame();
+        this.gameEngine.resetGame();
         this.gameScreen.style.display = 'none';
+        this.titleScreen.style.display = 'flex';
         this.setupScreen.style.display = 'flex';
         const titleButtons = document.querySelector('.main-actions');
         if (titleButtons) {
@@ -304,6 +309,7 @@ export class GameUI {
         this.gameEngine.updateSpeaker(newSettings.speakerId);
 
         // Switch back to game screen
+        this.titleScreen.style.display = 'none';
         this.setupScreen.style.display = 'none';
         this.gameScreen.style.display = 'block';
 

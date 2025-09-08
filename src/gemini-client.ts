@@ -1,9 +1,6 @@
 import type { LMStudioMessage } from './lmstudio-client';
 
 // Gemini API request format
-interface GeminiRequest {
-    contents: GeminiContent[];
-}
 
 interface GeminiContent {
     role: 'user' | 'model';

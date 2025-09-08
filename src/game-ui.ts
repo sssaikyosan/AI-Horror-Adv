@@ -386,8 +386,8 @@ export class GameUI {
         console.log('GameUI: ゲームを初期化します');
         this.setProcessingState(true);
         try {
-            const { sceneDescription, choices } = await this.gameEngine.startGame();
-            this.updateDisplay(choices);
+            const result = await this.gameEngine.startGame();
+            this.updateDisplay(result.choices);
         } catch (error) {
             console.error('Error initializing game:', error);
             this.showErrorPopup(error instanceof Error ? error.message : 'ゲームの初期化に失敗しました。設定を確認してもう一度お試しください。', 'fatal');

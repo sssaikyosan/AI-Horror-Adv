@@ -83,7 +83,6 @@ export class GameEngine {
     }
 
     async startGame(): Promise<{ sceneDescription: string; choices: Choice[] }> {
-        this.resetGame();
         // BGMを再生
         this.bgmManager.play();
         try {
@@ -403,6 +402,10 @@ export class GameEngine {
      * 現在のゲーム状態をローカルストレージに保存します
      */
     saveGame(): void {
+        if (this.gameState.history.length === 0) {
+            console.log('ゲームデータが存在しないため保存に失敗しました');
+            return
+        }
         try {
             const gameStateToSave = {
                 ...this.gameState,

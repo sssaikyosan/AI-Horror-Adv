@@ -200,23 +200,13 @@ export class GameUI {
     }
 
     private loadGameFromTitle(): void {
-        // When loading from title, ensure title buttons are visible
-        const titleButtons = document.querySelector('.main-actions');
-        if (titleButtons) {
-            (titleButtons as HTMLElement).style.display = 'flex';
-        }
-        // Hide confirm button
-        const confirmButton = document.querySelector('#confirm-settings-btn');
-        if (confirmButton) {
-            (confirmButton as HTMLElement).style.display = 'none';
-        }
-        // Load the game
+        this.saveSettings();        // Load the game
         this.loadGame();
     }
 
     private saveAndBackToTitle() {
         this.gameEngine.saveGame();
-        this.gameEngine.resetGame();
+        this.resetGame();
         this.gameScreen.style.display = 'none';
         this.titleScreen.style.display = 'block';
         this.setupScreen.style.display = 'block';
@@ -237,6 +227,7 @@ export class GameUI {
         console.log('GameUI: ゲームを開始します');
         this.setProcessingState(true);
         try {
+            this.resetGame();
             const result = await this.gameEngine.startGame();
             this.updateDisplay(result.choices);
         } catch (error) {
@@ -347,6 +338,9 @@ export class GameUI {
         if (this.settingsGeminiApiKeyInput) this.settingsGeminiApiKeyInput.value = this.currentSettings.apiType === 'gemini' ? this.currentSettings.apiKey : '';
         if (this.settingsOpenaiApiKeyInput) this.settingsOpenaiApiKeyInput.value = this.currentSettings.apiType === 'openai' ? this.currentSettings.apiKey : '';
 
+        // Toggle load button visibility based on saved game data
+        this.toggleLoadButton();
+
         // Update UI immediately to show/hide relevant fields
         this.updateSettingsUI();
 
@@ -364,8 +358,7 @@ export class GameUI {
             }
         }
 
-        // Toggle load button visibility based on saved game data
-        this.toggleLoadButton();
+
     }
 
     private async loadSpeakersToSettings(): Promise<void> {

@@ -43,8 +43,7 @@ body {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
   background-image: url('/background.png');
   background-size: cover;
   background-position: center;
@@ -214,7 +213,7 @@ h1 {
   flex-direction: column;
   padding: 1.5rem;
   gap: 1.5rem;
-  overflow-y: auto;
+  overflow-y: hidden;
 }
 
 .scene-description {
@@ -228,6 +227,7 @@ h1 {
   min-height: 150px;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
   transition: opacity 0.5s ease-in-out;
+  overflow-y: hidden;
 }
 
 .scene-description::before {
@@ -241,6 +241,7 @@ h1 {
   gap: 1rem;
   margin-top: auto;
   padding: 0.5rem;
+  overflow-y: hidden;
 }
 
 .choice-button {
@@ -616,11 +617,13 @@ button:focus-visible {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   max-height: 90vh;
   text-align: center;
+  overflow: hidden;
 }
 
 .setup-container {
   padding: 0.5rem 0;
   text-align: center;
+  overflow-y: hidden;
 }
 
 .setup-container h2 {
@@ -973,6 +976,7 @@ button:focus-visible {
   padding: 1rem;
   margin-bottom: 1rem;
   text-align: center;
+  overflow: hidden;
 }
 
 .main-actions {

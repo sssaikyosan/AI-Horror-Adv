@@ -36,11 +36,14 @@ export class GameUI {
     private settingsCancelButton: HTMLElement | null = null;
     private settingsApiTypeSelect: HTMLSelectElement | null = null;
     private settingsApiUrlInput: HTMLInputElement | null = null;
-    private settingsApiKeyInput: HTMLInputElement | null = null;
+    private settingsGeminiApiKeyInput: HTMLInputElement | null = null;
+    private settingsOpenaiApiKeyInput: HTMLInputElement | null = null;
     private settingsModelSelect: HTMLSelectElement | null = null;
     private settingsVoiceSelect: HTMLSelectElement | null = null;
     private settingsModelContainer: HTMLElement | null = null;
     private settingsApiUrlContainer: HTMLElement | null = null;
+    private settingsGeminiApiKeyContainer: HTMLElement | null = null;
+    private settingsOpenaiApiKeyContainer: HTMLElement | null = null;
 
     // Audio Setup Info Modal
     private audioSetupInfoModal: HTMLElement | null = null;
@@ -83,11 +86,14 @@ export class GameUI {
         this.settingsCancelButton = document.querySelector('#settings-cancel-btn');
         this.settingsApiTypeSelect = document.querySelector('#settings-api-type') as HTMLSelectElement | null;
         this.settingsApiUrlInput = document.querySelector('#settings-api-url') as HTMLInputElement | null;
-        this.settingsApiKeyInput = document.querySelector('#settings-api-key') as HTMLInputElement | null;
+        this.settingsGeminiApiKeyInput = document.querySelector('#settings-gemini-api-key') as HTMLInputElement | null;
+        this.settingsOpenaiApiKeyInput = document.querySelector('#settings-openai-api-key') as HTMLInputElement | null;
         this.settingsModelSelect = document.querySelector('#settings-model-select') as HTMLSelectElement | null;
         this.settingsVoiceSelect = document.querySelector('#settings-voice-select') as HTMLSelectElement | null;
         this.settingsModelContainer = document.querySelector('#settings-model-container');
         this.settingsApiUrlContainer = document.querySelector('#settings-api-url-container');
+        this.settingsGeminiApiKeyContainer = document.querySelector('#settings-gemini-api-key-container');
+        this.settingsOpenaiApiKeyContainer = document.querySelector('#settings-openai-api-key-container');
 
         // Audio Setup Info Modal elements
         this.audioSetupInfoModal = document.querySelector('#audio-setup-info-modal');
@@ -135,7 +141,8 @@ export class GameUI {
         // Load current settings into the modal
         if (this.settingsApiTypeSelect) this.settingsApiTypeSelect.value = this.currentSettings.apiType;
         if (this.settingsApiUrlInput) this.settingsApiUrlInput.value = this.currentSettings.apiUrl;
-        if (this.settingsApiKeyInput) this.settingsApiKeyInput.value = this.currentSettings.apiKey;
+        if (this.settingsGeminiApiKeyInput) this.settingsGeminiApiKeyInput.value = this.currentSettings.apiType === 'gemini' ? this.currentSettings.apiKey : '';
+        if (this.settingsOpenaiApiKeyInput) this.settingsOpenaiApiKeyInput.value = this.currentSettings.apiType === 'openai' ? this.currentSettings.apiKey : '';
 
         // Load dynamic options
         await this.loadSpeakersToSettings();
@@ -167,12 +174,12 @@ export class GameUI {
     }
 
     private saveSettings(): void {
-        if (!this.settingsApiTypeSelect || !this.settingsApiKeyInput || !this.settingsApiUrlInput || 
+        if (!this.settingsApiTypeSelect || !this.settingsGeminiApiKeyInput || !this.settingsOpenaiApiKeyInput || !this.settingsApiUrlInput || 
             !this.settingsModelSelect || !this.settingsVoiceSelect) return;
 
         const newSettings: GameSettings = {
             apiType: this.settingsApiTypeSelect.value,
-            apiKey: this.settingsApiKeyInput.value,
+            apiKey: this.settingsApiTypeSelect.value === 'gemini' ? this.settingsGeminiApiKeyInput.value : this.settingsOpenaiApiKeyInput.value,
             apiUrl: this.settingsApiUrlInput.value,
             model: this.settingsModelSelect.value,
             speakerId: parseInt(this.settingsVoiceSelect.value, 10)
@@ -201,14 +208,19 @@ export class GameUI {
     }
 
     private updateSettingsUI(): void {
-        if (!this.settingsApiTypeSelect || !this.settingsApiUrlContainer || !this.settingsModelContainer) return;
+        if (!this.settingsApiTypeSelect || !this.settingsApiUrlContainer || !this.settingsModelContainer || 
+            !this.settingsGeminiApiKeyContainer || !this.settingsOpenaiApiKeyContainer) return;
         
         if (this.settingsApiTypeSelect.value === 'gemini') {
             this.settingsApiUrlContainer.style.display = 'none';
             this.settingsModelContainer.style.display = 'block';
+            this.settingsGeminiApiKeyContainer.style.display = 'block';
+            this.settingsOpenaiApiKeyContainer.style.display = 'none';
         } else {
             this.settingsApiUrlContainer.style.display = 'block';
             this.settingsModelContainer.style.display = 'none';
+            this.settingsGeminiApiKeyContainer.style.display = 'none';
+            this.settingsOpenaiApiKeyContainer.style.display = 'block';
         }
     }
 
@@ -234,10 +246,10 @@ export class GameUI {
     }
 
     private async loadGeminiModelsToSettings(): Promise<void> {
-        if (!this.settingsApiKeyInput || !this.settingsModelSelect) return;
+        if (!this.settingsGeminiApiKeyInput || !this.settingsModelSelect) return;
         
         try {
-            const apiKey = this.settingsApiKeyInput.value;
+            const apiKey = this.settingsGeminiApiKeyInput.value;
             if (!apiKey) return;
 
             const tempClient = new GeminiClient(apiKey);

@@ -31,9 +31,13 @@
         <label for="api-url">Endpoint URL:</label>
         <input type="text" id="api-url" value="http://localhost:1234/v1">
       </div>
-      <div class="form-group">
-        <label for="api-key">API Key:</label>
-        <input type="password" id="api-key" placeholder="Required for Gemini">
+      <div class="form-group" id="gemini-api-key-container">
+        <label for="gemini-api-key">Gemini API Key:</label>
+        <input type="password" id="gemini-api-key" placeholder="Required for Gemini">
+      </div>
+      <div class="form-group" id="openai-api-key-container" style="display: none;">
+        <label for="openai-api-key">OpenAI Compatible API Key:</label>
+        <input type="password" id="openai-api-key" placeholder="Optional for OpenAI Compatible">
       </div>
       <div class="form-group" id="voice-container">
         <label for="voice-select">読み上げ音声:</label>
@@ -127,9 +131,13 @@
         <label for="settings-api-url">Endpoint URL:</label>
         <input type="text" id="settings-api-url">
       </div>
-      <div class="form-group">
-        <label for="settings-api-key">API Key:</label>
-        <input type="password" id="settings-api-key">
+      <div class="form-group" id="settings-gemini-api-key-container">
+        <label for="settings-gemini-api-key">Gemini API Key:</label>
+        <input type="password" id="settings-gemini-api-key">
+      </div>
+      <div class="form-group" id="settings-openai-api-key-container" style="display: none;">
+        <label for="settings-openai-api-key">OpenAI Compatible API Key:</label>
+        <input type="password" id="settings-openai-api-key">
       </div>
       <div class="form-group" id="settings-voice-container">
         <label for="settings-voice-select">読み上げ音声:</label>

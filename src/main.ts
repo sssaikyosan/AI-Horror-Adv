@@ -11,11 +11,14 @@ const startButton = document.getElementById('start-game-btn') as HTMLButtonEleme
 const loadButton = document.getElementById('load-game-btn') as HTMLButtonElement;
 const saveAndQuitButton = document.getElementById('save-and-quit-btn') as HTMLButtonElement;
 const apiUrlInput = document.getElementById('api-url') as HTMLInputElement;
-const apiKeyInput = document.getElementById('api-key') as HTMLInputElement;
+const geminiApiKeyInput = document.getElementById('gemini-api-key') as HTMLInputElement;
+const openaiApiKeyInput = document.getElementById('openai-api-key') as HTMLInputElement;
 const apiTypeSelect = document.getElementById('api-type') as HTMLSelectElement;
 const modelContainer = document.getElementById('model-container') as HTMLElement;
 const modelSelect = document.getElementById('model-select') as HTMLSelectElement;
 const apiUrlContainer = document.getElementById('api-url-container') as HTMLElement;
+const geminiApiKeyContainer = document.getElementById('gemini-api-key-container') as HTMLElement;
+const openaiApiKeyContainer = document.getElementById('openai-api-key-container') as HTMLElement;
 const voiceSelect = document.getElementById('voice-select') as HTMLSelectElement;
 
 let gameEngine: GameEngine;
@@ -75,7 +78,7 @@ if (apiSetupInfoButton && apiSetupInfoModal && apiSetupInfoCloseButton) {
 
 // Reload models when API key changes
 let debounceTimer: number | null = null;
-apiKeyInput.addEventListener('input', () => {
+geminiApiKeyInput.addEventListener('input', () => {
   // Debounce the API call to avoid too many requests
   if (debounceTimer) {
     clearTimeout(debounceTimer);
@@ -101,7 +104,7 @@ voiceSelect.addEventListener('change', () => {
 async function loadGeminiModels() {
   try {
     // Get API key from input field
-    const apiKey = apiKeyInput.value;
+    const apiKey = geminiApiKeyInput.value;
 
     // Create a client with the API key (or empty string if not provided)
     const tempClient = new GeminiClient(apiKey);
@@ -187,18 +190,20 @@ function updateUIForAPIType(apiType: string) {
   if (apiType === 'gemini') {
     // Hide URL input for Gemini as it uses a fixed URL
     apiUrlContainer.style.display = 'none';
+    geminiApiKeyContainer.style.display = 'block';
+    openaiApiKeyContainer.style.display = 'none';
     modelContainer.style.display = 'block';
-    apiKeyInput.placeholder = 'Required for Gemini';
     // Focus on the API key field since it's required
-    apiKeyInput.focus();
+    geminiApiKeyInput.focus();
 
     // Load models for Gemini
     loadGeminiModels();
   } else {
     // Show URL input for other APIs
     apiUrlContainer.style.display = 'block';
+    geminiApiKeyContainer.style.display = 'none';
+    openaiApiKeyContainer.style.display = 'block';
     modelContainer.style.display = 'none';
-    apiKeyInput.placeholder = 'Optional';
   }
 }
 
@@ -212,7 +217,8 @@ function toggleLoadButton() {
 
 startButton.addEventListener('click', async () => {
   const apiUrl = apiUrlInput.value;
-  const apiKey = apiKeyInput.value;
+  const geminiApiKey = geminiApiKeyInput.value;
+  const openaiApiKey = openaiApiKeyInput.value;
   const apiType = apiTypeSelect.value;
   const selectedModel = modelSelect.value;
   const selectedSpeakerId = parseInt(voiceSelect.value, 10) || 0;
@@ -221,14 +227,14 @@ startButton.addEventListener('click', async () => {
 
   if (apiType === 'gemini') {
     // For Gemini, the API key is required and the URL is fixed
-    if (!apiKey) {
+    if (!geminiApiKey) {
       alert('Gemini API requires an API key');
       return;
     }
-    client = new GeminiClient(apiKey, selectedModel);
+    client = new GeminiClient(geminiApiKey, selectedModel);
   } else {
     // Default to LM Studio client
-    client = new LMStudioClient(apiUrl, 'default', apiKey);
+    client = new LMStudioClient(apiUrl, 'default', openaiApiKey);
   }
 
   // Initialize game engine
@@ -236,7 +242,7 @@ startButton.addEventListener('click', async () => {
 
   const initialSettings = {
     apiType: apiType,
-    apiKey: apiKey,
+    apiKey: apiType === 'gemini' ? geminiApiKey : openaiApiKey,
     apiUrl: apiUrl,
     model: selectedModel,
     speakerId: selectedSpeakerId
@@ -266,7 +272,8 @@ startButton.addEventListener('click', async () => {
 loadButton.addEventListener('click', async () => {
   if (!gameEngine) {
     const apiUrl = apiUrlInput.value;
-    const apiKey = apiKeyInput.value;
+    const geminiApiKey = geminiApiKeyInput.value;
+    const openaiApiKey = openaiApiKeyInput.value;
     const apiType = apiTypeSelect.value;
     const selectedModel = modelSelect.value;
     const selectedSpeakerId = parseInt(voiceSelect.value, 10) || 0;
@@ -274,20 +281,20 @@ loadButton.addEventListener('click', async () => {
     let client: LMStudioClient | GeminiClient;
 
     if (apiType === 'gemini') {
-      if (!apiKey) {
+      if (!geminiApiKey) {
         alert('Gemini API requires an API key');
         return;
       }
-      client = new GeminiClient(apiKey, selectedModel);
+      client = new GeminiClient(geminiApiKey, selectedModel);
     } else {
-      client = new LMStudioClient(apiUrl, 'default', apiKey);
+      client = new LMStudioClient(apiUrl, 'default', openaiApiKey);
     }
 
     gameEngine = new GameEngine(client as any, selectedSpeakerId);
 
     const initialSettings = {
       apiType: apiType,
-      apiKey: apiKey,
+      apiKey: apiType === 'gemini' ? geminiApiKey : openaiApiKey,
       apiUrl: apiUrl,
       model: selectedModel,
       speakerId: selectedSpeakerId

@@ -2,9 +2,15 @@ export class BGMManager {
     private audio: HTMLAudioElement | null = null;
     private isPlaying: boolean = false;
     private bgmPath: string;
+    private volume: number;
 
-    constructor(bgmPath: string = './music.mp3') {
+    constructor(bgmPath: string = './music.mp3', initialVolume: number = 0.2) {
         this.bgmPath = bgmPath;
+        this.volume = initialVolume;
+        this.audio = new Audio(this.bgmPath);
+        this.audio.loop = true;
+        this.audio.volume = initialVolume;
+        console.log('BGMManager initialized with volume:', initialVolume);
     }
 
     /**
@@ -13,8 +19,15 @@ export class BGMManager {
     play(): void {
         if (!this.audio) {
             this.audio = new Audio(this.bgmPath);
-            this.audio.loop = true; // ループ再生
-            this.audio.volume = 0.3; // 音量を少し小さめに設定
+            this.audio.loop = true;
+            this.audio.volume = this.volume;
+            console.log('Created new audio element with volume:', this.volume);
+        }
+
+        // Ensure the volume is set correctly
+        if (this.audio) {
+            this.audio.volume = this.volume;
+            console.log('Setting audio volume to:', this.volume);
         }
 
         // 再生中にエラーが発生した場合の処理
@@ -50,9 +63,19 @@ export class BGMManager {
      * @param volume 音量 (0.0 ～ 1.0)
      */
     setVolume(volume: number): void {
+        this.volume = Math.max(0, Math.min(1, volume));
         if (this.audio) {
-            this.audio.volume = Math.max(0, Math.min(1, volume));
+            this.audio.volume = this.volume;
         }
+        console.log('BGM volume set to:', this.volume);
+    }
+
+    /**
+     * 現在のBGMの音量を取得する
+     * @returns number 音量 (0.0 ～ 1.0)
+     */
+    getVolume(): number {
+        return this.volume;
     }
 
     /**

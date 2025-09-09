@@ -11,7 +11,8 @@ window.addEventListener('DOMContentLoaded', () => {
     apiKey: '',
     apiUrl: 'http://localhost:1234/v1',
     model: 'gemini-2.5-pro',
-    speakerId: 3
+    speakerId: 3,
+    bgmVolume: 0.2
   };
 
   const client = new GeminiClient('');

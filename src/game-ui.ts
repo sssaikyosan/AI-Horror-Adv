@@ -59,6 +59,10 @@ export class GameUI {
     private audioSetupInfoButton: HTMLElement | null = null;
     private audioSetupInfoCloseButton: HTMLElement | null = null;
 
+    // BGM Volume elements
+    private bgmVolumeSlider: HTMLInputElement | null = null;
+    private bgmVolumeValue: HTMLElement | null = null;
+
     private isProcessing: boolean = false;
 
     private currentSettings: GameSettings;
@@ -117,6 +121,10 @@ export class GameUI {
         this.audioSetupInfoButton = document.querySelector('#audio-setup-info-btn');
         this.audioSetupInfoCloseButton = document.querySelector('#audio-setup-info-close-btn');
 
+        // BGM Volume elements
+        this.bgmVolumeSlider = document.querySelector('#bgm-volume') as HTMLInputElement | null;
+        this.bgmVolumeValue = document.querySelector('#bgm-volume-value');
+
         this.setupEventListeners();
         this.setupSpeechToggle();
     }
@@ -172,6 +180,16 @@ export class GameUI {
         this.audioSetupInfoCloseButton?.addEventListener('click', () => this.closeAudioSetupInfoModal());
         this.audioSetupInfoModal?.addEventListener('click', (event) => {
             if (event.target === this.audioSetupInfoModal) this.closeAudioSetupInfoModal();
+        });
+
+        // BGM volume control
+        this.bgmVolumeSlider?.addEventListener('input', (e) => {
+            const target = e.target as HTMLInputElement;
+            const volume = parseFloat(target.value);
+            console.log('Volume slider changed to:', volume);
+            console.log('Slider value:', target.value);
+            this.updateBGMVolumeDisplay(volume);
+            this.gameEngine.setBGMVolume(volume);
         });
     }
 
@@ -282,7 +300,7 @@ export class GameUI {
 
     private saveSettings(): boolean {
         if (!this.settingsApiTypeSelect || !this.settingsGeminiApiKeyInput || !this.settingsOpenaiApiKeyInput || !this.settingsApiUrlInput ||
-            !this.settingsModelSelect || !this.settingsVoiceSelect) return false;
+            !this.settingsModelSelect || !this.settingsVoiceSelect || !this.bgmVolumeSlider) return false;
 
         const newSettings: GameSettings = {
             apiType: this.settingsApiTypeSelect.value,
@@ -310,6 +328,7 @@ export class GameUI {
         // Update the game engine with the new client and speaker
         this.gameEngine.updateClient(newClient);
         this.gameEngine.updateSpeaker(newSettings.speakerId);
+        this.gameEngine.setBGMVolume(parseFloat(this.bgmVolumeSlider.value));
 
         // Switch back to game screen
         this.titleScreen.style.display = 'none';
@@ -355,6 +374,12 @@ export class GameUI {
             this.settingsVoiceSelect.value = this.currentSettings.speakerId.toString();
         }
 
+        // Set BGM volume
+        if (this.bgmVolumeSlider) {
+            this.bgmVolumeSlider.value = this.gameEngine.getBGMVolume().toString();
+            this.updateBGMVolumeDisplay(this.gameEngine.getBGMVolume());
+        }
+
         // Only load Gemini models if using Gemini API and API key is provided
         if (this.currentSettings.apiType === 'gemini' && this.currentSettings.apiKey) {
             await this.loadGeminiModelsToSettings();
@@ -362,8 +387,6 @@ export class GameUI {
                 this.settingsModelSelect.value = this.currentSettings.model;
             }
         }
-
-
     }
 
     private async loadSpeakersToSettings(): Promise<void> {
@@ -670,6 +693,12 @@ export class GameUI {
     private hideErrorPopup(): void {
         if (this.errorModal) {
             this.errorModal.style.display = 'none';
+        }
+    }
+
+    private updateBGMVolumeDisplay(volume: number): void {
+        if (this.bgmVolumeValue) {
+            this.bgmVolumeValue.textContent = Math.round(volume * 100).toString();
         }
     }
 

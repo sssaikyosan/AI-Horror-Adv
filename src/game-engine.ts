@@ -39,7 +39,8 @@ export class GameEngine {
             gameStatus: 'continue',
             choices: [] // 初期化
         };
-        this.bgmManager = new BGMManager();
+        this.bgmManager = new BGMManager('./music.mp3', 0.2);
+        console.log('GameEngine: BGMManager initialized with volume:', this.bgmManager.getVolume());
         this.voicevoxClient = new VoicevoxClient();
         this.selectedSpeakerId = selectedSpeakerId;
 
@@ -99,7 +100,7 @@ export class GameEngine {
                 history: [initialScenario.story],
                 currentStep: 0,
                 gameStatus: 'continue',
-                choices: initialScenario.choices || []
+                choices: initialScenario.choices || [],
             };
 
             this.choices = initialScenario.choices || [];
@@ -413,6 +414,7 @@ export class GameEngine {
         try {
             const gameStateToSave = {
                 ...this.gameState,
+                bgmVolume: this.bgmManager.getVolume()
                 // 必要に応じて追加の状態をここに保存
             };
             localStorage.setItem('aiHorrorGameState', JSON.stringify(gameStateToSave));
@@ -430,6 +432,7 @@ export class GameEngine {
             const savedState = localStorage.getItem('aiHorrorGameState');
             if (savedState) {
                 const parsedState = JSON.parse(savedState);
+                console.log('Loaded saved state:', parsedState);
                 // 型チェックを行う（必要に応じて）
                 if (this.isValidGameState(parsedState)) {
                     this.gameState = parsedState;
@@ -472,10 +475,20 @@ export class GameEngine {
     }
 
     startBGM() {
+        console.log('Starting BGM with volume:', this.bgmManager.getVolume());
         this.bgmManager.play();
     }
 
     stopBGM() {
         this.bgmManager.stop();
+    }
+
+    setBGMVolume(volume: number) {
+        console.log('GameEngine: Setting BGM volume to', volume);
+        this.bgmManager.setVolume(volume);
+    }
+
+    getBGMVolume() {
+        return this.bgmManager.getVolume();
     }
 }

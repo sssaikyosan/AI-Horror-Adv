@@ -27,10 +27,12 @@
         <fieldset class="settings-section">
           <div class="form-group">
             <label for="api-type">API-Type:</label>
-            <select id="api-type">
-              <option value="gemini">Gemini</option>
-              <option value="openai">OpenAI Compatible</option>
-            </select>
+            <div class="select-wrapper">
+              <select id="api-type">
+                <option value="gemini">Gemini</option>
+                <option value="openai">OpenAI Compatible</option>
+              </select>
+            </div>
           </div>
           <div id="api-settings-wrapper">
             <div class="form-group" id="gemini-api-key-container">
@@ -47,9 +49,11 @@
             </div>
             <div class="form-group" id="model-container" style="display: none;">
               <label for="model-select">Model:</label>
-              <select id="model-select">
-                <!-- Options will be populated dynamically -->
-              </select>
+              <div class="select-wrapper">
+                <select id="model-select">
+                  <!-- Options will be populated dynamically -->
+                </select>
+              </div>
             </div>
           </div>
         </fieldset>
@@ -57,10 +61,12 @@
         <fieldset class="settings-section">
           <div class="form-group" id="voice-container">
             <label for="voice-select">読み上げ音声:</label>
-            <select id="voice-select">
-              <option value="-1">なし</option>
-              <!-- Options will be populated dynamically -->
-            </select>
+            <div class="select-wrapper">
+              <select id="voice-select">
+                <option value="-1">なし</option>
+                <!-- Options will be populated dynamically -->
+              </select>
+            </div>
           </div>
         </fieldset>
       </div>

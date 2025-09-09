@@ -10,6 +10,7 @@ interface GameSettings {
     apiUrl: string;
     model: string;
     speakerId: number;
+    bgmVolume?: number;
 }
 
 export class GameUI {
@@ -73,6 +74,20 @@ export class GameUI {
     ) {
         this.gameEngine = gameEngine;
         this.currentSettings = initialSettings;
+
+        // Load settings from localStorage if available, otherwise use initialSettings
+        const savedSettings = localStorage.getItem('aiHorrorGameSettings');
+        if (savedSettings) {
+            try {
+                const parsedSettings = JSON.parse(savedSettings);
+                // Apply saved BGM volume if available
+                if (parsedSettings.bgmVolume !== undefined) {
+                    this.gameEngine.setBGMVolume(parsedSettings.bgmVolume);
+                }
+            } catch (error) {
+                console.error('Failed to parse saved settings:', error);
+            }
+        }
 
         // Main UI elements
         this.sceneElement = document.querySelector('#scene-description')!;
@@ -317,7 +332,7 @@ export class GameUI {
         let newClient: LMStudioClient | GeminiClient;
         if (newSettings.apiType === 'gemini') {
             if (!newSettings.apiKey) {
-                this.showErrorPopup("Gemini APIキーが必要です。", 'transient');
+                this.showErrorPopup("API-Keyが必要です。", 'transient');
                 return false;
             }
             newClient = new GeminiClient(newSettings.apiKey, newSettings.model);
@@ -325,10 +340,19 @@ export class GameUI {
             newClient = new LMStudioClient(newSettings.apiUrl, 'default', newSettings.apiKey);
         }
 
+        // Get BGM volume and save to localStorage
+        const bgmVolume = parseFloat(this.bgmVolumeSlider.value);
+
         // Update the game engine with the new client and speaker
         this.gameEngine.updateClient(newClient);
         this.gameEngine.updateSpeaker(newSettings.speakerId);
-        this.gameEngine.setBGMVolume(parseFloat(this.bgmVolumeSlider.value));
+        this.gameEngine.setBGMVolume(bgmVolume);
+
+        // Save settings to localStorage
+        const settingsToSave = {
+            bgmVolume: bgmVolume
+        };
+        localStorage.setItem('aiHorrorGameSettings', JSON.stringify(settingsToSave));
 
         // Switch back to game screen
         this.titleScreen.style.display = 'none';
@@ -368,16 +392,13 @@ export class GameUI {
         // Update UI immediately to show/hide relevant fields
         this.updateSettingsUI();
 
-        // Load dynamic options
-        await this.loadSpeakersToSettings();
-        if (this.settingsVoiceSelect) {
-            this.settingsVoiceSelect.value = this.currentSettings.speakerId.toString();
-        }
+        // Get BGM volume from saved settings or fallback to current volume
+        const bgmVolume = this.gameEngine.getBGMVolume();
 
         // Set BGM volume
         if (this.bgmVolumeSlider) {
-            this.bgmVolumeSlider.value = this.gameEngine.getBGMVolume().toString();
-            this.updateBGMVolumeDisplay(this.gameEngine.getBGMVolume());
+            this.bgmVolumeSlider.value = bgmVolume.toString();
+            this.updateBGMVolumeDisplay(bgmVolume);
         }
 
         // Only load Gemini models if using Gemini API and API key is provided
@@ -386,6 +407,13 @@ export class GameUI {
             if (this.settingsModelSelect) {
                 this.settingsModelSelect.value = this.currentSettings.model;
             }
+        }
+
+        // Load dynamic options
+        await this.loadSpeakersToSettings();
+
+        if (this.settingsVoiceSelect) {
+            this.settingsVoiceSelect.value = this.currentSettings.speakerId.toString();
         }
     }
 

@@ -4,7 +4,7 @@ export class BGMManager {
     private bgmPath: string;
     private volume: number;
 
-    constructor(bgmPath: string = './music.mp3', initialVolume: number = 0.2) {
+    constructor(bgmPath: string = './music.mp3', initialVolume: number = 0.3) {
         this.bgmPath = bgmPath;
         this.volume = initialVolume;
         this.audio = new Audio(this.bgmPath);

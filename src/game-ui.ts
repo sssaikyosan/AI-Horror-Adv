@@ -202,8 +202,9 @@ export class GameUI {
     }
 
     private loadGameFromTitle(): void {
-        this.saveSettings();        // Load the game
-        this.loadGame();
+        if (this.saveSettings()) {
+            this.loadGame();
+        };
     }
 
     private saveAndBackToTitle() {
@@ -243,6 +244,7 @@ export class GameUI {
     private async loadGame(): Promise<void> {
         const loadedState = this.gameEngine.loadGame();
         if (loadedState) {
+            this.gameEngine.startBGM();
             // ゲームUIを更新
             this.updateDisplayFromState(loadedState);
 

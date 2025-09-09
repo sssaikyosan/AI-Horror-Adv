@@ -512,10 +512,20 @@ export class GameUI {
     private setupSpeechToggle(): void {
         const speechToggle = document.querySelector('#speech-toggle');
         if (speechToggle) {
+            // ローカルストレージから読み上げ設定を読み込む
+            const savedSpeechSetting = localStorage.getItem('aiHorrorSpeechEnabled');
+            if (savedSpeechSetting !== null) {
+                const isSpeechEnabled = savedSpeechSetting === 'true';
+                if (isSpeechEnabled) {
+                    this.gameEngine.toggleIsSpeechEnabled();
+                }
+            }
             this.updateSpeechSwitchState(speechToggle);
             speechToggle.addEventListener('click', () => {
                 this.gameEngine.toggleIsSpeechEnabled();
                 this.updateSpeechSwitchState(speechToggle);
+                // ローカルストレージに読み上げ設定を保存
+                localStorage.setItem('aiHorrorSpeechEnabled', this.gameEngine.getIsSpeechEnabled().toString());
                 console.log(`読み上げ機能が${this.gameEngine.getIsSpeechEnabled() ? '有効' : '無効'}になりました`);
             });
         }

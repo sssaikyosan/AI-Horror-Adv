@@ -17,48 +17,55 @@
         <button id="start-game-btn">ゲーム開始</button>
         <button id="load-game-btn" style="display: none;">途中から</button>
       </div>
-      <div class="button-group">
-        <button id="api-setup-info-btn" class="secondary-btn">API設定方法</button>
-        <button id="audio-setup-info-btn" class="secondary-btn">音声設定方法</button>
-      </div>
-      <div class="settings-section">
-        <div class="form-group">
-          <label for="api-type">API Type:</label>
-          <select id="api-type">
-            <option value="gemini">Gemini</option>
-            <option value="openai">OpenAI Compatible</option>
-          </select>
-        </div>
-        <div id="api-settings-wrapper">
-          <div class="form-group" id="gemini-api-key-container">
-            <label for="gemini-api-key">API Key:</label>
-            <input type="password" id="gemini-api-key" placeholder="Required for Gemini">
+
+      <div class="settings-group">
+        <fieldset class="settings-section">
+          <legend>API設定</legend>
+          <div class="form-group">
+            <label for="api-type">API-Type:</label>
+            <select id="api-type">
+              <option value="gemini">Gemini</option>
+              <option value="openai">OpenAI Compatible</option>
+            </select>
           </div>
-          <div class="form-group" id="openai-api-key-container" style="display: none;">
-            <label for="openai-api-key">API Key:</label>
-            <input type="password" id="openai-api-key" placeholder="Optional">
+          <div id="api-settings-wrapper">
+            <div class="form-group" id="gemini-api-key-container">
+              <label for="gemini-api-key">API-Key:</label>
+              <input type="password" id="gemini-api-key" placeholder="Geminiに必要">
+            </div>
+            <div class="form-group" id="openai-api-key-container" style="display: none;">
+              <label for="openai-api-key">API-Key:</label>
+              <input type="password" id="openai-api-key" placeholder="任意">
+            </div>
+            <div class="form-group" id="api-url-container">
+              <label for="api-url">URL:</label>
+              <input type="text" id="api-url" value="http://localhost:1234/v1">
+            </div>
+            <div class="form-group" id="model-container" style="display: none;">
+              <label for="model-select">Model:</label>
+              <select id="model-select">
+                <!-- Options will be populated dynamically -->
+              </select>
+            </div>
           </div>
-          <div class="form-group" id="api-url-container">
-            <label for="api-url">Endpoint URL:</label>
-            <input type="text" id="api-url" value="http://localhost:1234/v1">
+          <div class="button-group">
+            <button id="api-setup-info-btn" class="secondary-btn">API設定方法</button>
           </div>
-          <div class="form-group" id="model-container" style="display: none;">
-            <label for="model-select">Model:</label>
-            <select id="model-select">
+        </fieldset>
+
+        <fieldset class="settings-section">
+          <legend>音声設定</legend>
+          <div class="form-group" id="voice-container">
+            <label for="voice-select">読み上げ音声:</label>
+            <select id="voice-select">
+              <option value="-1">なし</option>
               <!-- Options will be populated dynamically -->
             </select>
           </div>
-        </div>
-      </div>
-
-      <div class="settings-section">
-        <div class="form-group" id="voice-container">
-          <label for="voice-select">読み上げ音声:</label>
-          <select id="voice-select">
-            <option value="-1">なし</option>
-            <!-- Options will be populated dynamically -->
-          </select>
-        </div>
+          <div class="button-group">
+            <button id="audio-setup-info-btn" class="secondary-btn">音声設定方法</button>
+          </div>
+        </fieldset>
       </div>
       <div class="setting-actions" style="display: none;">
         <button id="confirm-settings-btn">決定</button>

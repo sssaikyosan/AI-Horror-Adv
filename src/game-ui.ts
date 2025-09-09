@@ -323,14 +323,14 @@ export class GameUI {
 
         if (this.settingsApiTypeSelect.value === 'gemini') {
             this.settingsApiUrlContainer.style.display = 'none';
-            this.settingsModelContainer.style.display = 'block';
-            this.settingsGeminiApiKeyContainer.style.display = 'block';
+            this.settingsModelContainer.style.display = 'flex';
+            this.settingsGeminiApiKeyContainer.style.display = 'flex';
             this.settingsOpenaiApiKeyContainer.style.display = 'none';
         } else {
-            this.settingsApiUrlContainer.style.display = 'block';
+            this.settingsApiUrlContainer.style.display = 'flex';
             this.settingsModelContainer.style.display = 'none';
             this.settingsGeminiApiKeyContainer.style.display = 'none';
-            this.settingsOpenaiApiKeyContainer.style.display = 'block';
+            this.settingsOpenaiApiKeyContainer.style.display = 'flex';
         }
     }
 

@@ -589,8 +589,12 @@ export class GameUI {
         if (gameState.gameStatus === 'gameover' || gameState.gameStatus === 'gameclear') {
             const description = gameState.gameResultDescription || '';
             this.sceneElement.innerHTML = `<p>${gameState.story}</p><p><strong>${description}</strong></p>`;
+            // ゲームオーバーまたはゲームクリア時の演出用クラスを追加
+            this.gameScreen.classList.add(gameState.gameStatus);
         } else {
             this.sceneElement.textContent = gameState.story;
+            // 通常時のクラスを適用
+            this.gameScreen.classList.remove('gameover', 'gameclear');
         }
         this.displayChoices(choices);
     }

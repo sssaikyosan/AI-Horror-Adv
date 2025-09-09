@@ -14,13 +14,17 @@
   <div id="setup-screen">
     <div class="setup-container">
       <div class="main-actions">
+        <button id="load-game-btn" style="display: none;">続きから</button>
         <button id="start-game-btn">ゲーム開始</button>
-        <button id="load-game-btn" style="display: none;">途中から</button>
+      </div>
+
+      <div class="button-group">
+        <button id="audio-setup-info-btn" class="secondary-btn">音声設定方法</button>
+        <button id="api-setup-info-btn" class="secondary-btn">API設定方法</button>
       </div>
 
       <div class="settings-group">
         <fieldset class="settings-section">
-          <legend>API設定</legend>
           <div class="form-group">
             <label for="api-type">API-Type:</label>
             <select id="api-type">
@@ -48,22 +52,15 @@
               </select>
             </div>
           </div>
-          <div class="button-group">
-            <button id="api-setup-info-btn" class="secondary-btn">API設定方法</button>
-          </div>
         </fieldset>
 
         <fieldset class="settings-section">
-          <legend>音声設定</legend>
           <div class="form-group" id="voice-container">
             <label for="voice-select">読み上げ音声:</label>
             <select id="voice-select">
               <option value="-1">なし</option>
               <!-- Options will be populated dynamically -->
             </select>
-          </div>
-          <div class="button-group">
-            <button id="audio-setup-info-btn" class="secondary-btn">音声設定方法</button>
           </div>
         </fieldset>
       </div>

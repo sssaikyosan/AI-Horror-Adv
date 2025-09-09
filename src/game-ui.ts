@@ -332,7 +332,7 @@ export class GameUI {
         let newClient: LMStudioClient | GeminiClient;
         if (newSettings.apiType === 'gemini') {
             if (!newSettings.apiKey) {
-                this.showErrorPopup("API-Keyが必要です。", 'transient');
+                this.showErrorPopup("API-Keyが必要です。<a href=\"https://aistudio.google.com/app/apikey\" target=\"_blank\" style=\"color: #4a90e2; text-decoration: underline; cursor: pointer;\">Google AI Studio</a>でAPIキーを取得してAPI-Keyの欄に入力してください。", 'transient');
                 return false;
             }
             newClient = new GeminiClient(newSettings.apiKey, newSettings.model);
@@ -704,7 +704,7 @@ export class GameUI {
 
     private showErrorPopup(message: string, type: 'fatal' | 'transient' = 'transient'): void {
         if (this.errorModal && this.errorModalMessage && this.backToTitleButton && this.errorModalCloseButton) {
-            this.errorModalMessage.textContent = message;
+            this.errorModalMessage.innerHTML = message;
 
             if (type === 'fatal') {
                 this.backToTitleButton.style.display = 'inline-block';

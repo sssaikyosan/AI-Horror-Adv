@@ -3,6 +3,22 @@ import { GameEngine } from './game-engine'
 import { GameUI } from './game-ui'
 import { GeminiClient } from './gemini-client';
 
+const copyUrlElement = document.querySelector('#copy-origin-url');
+if (copyUrlElement) {
+  copyUrlElement.addEventListener('click', () => {
+    const url = 'https://main.ssdojo.net';
+    navigator.clipboard.writeText(url).then(() => {
+      // Show feedback to user
+      copyUrlElement.textContent = 'コピーしました！';
+      setTimeout(() => {
+        copyUrlElement.textContent = url;
+      }, 1500);
+    }).catch(err => {
+      console.error('Failed to copy URL: ', err);
+    });
+  });
+}
+
 // Initialize game engine and UI when the page loads
 window.addEventListener('DOMContentLoaded', () => {
   // Set up initial game engine and UI

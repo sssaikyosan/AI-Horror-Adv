@@ -304,24 +304,6 @@ export class GameUI {
     private openAudioSetupInfoModal(): void {
         if (this.audioSetupInfoModal) {
             this.audioSetupInfoModal.style.display = 'flex';
-            
-            // Add event listener for copying the origin URL
-            const copyUrlElement = document.querySelector('#copy-origin-url');
-            if (copyUrlElement) {
-                copyUrlElement.addEventListener('click', () => {
-                    const url = 'https://main.ssdojo.net';
-                    navigator.clipboard.writeText(url).then(() => {
-                        // Show feedback to user
-                        const originalText = copyUrlElement.textContent;
-                        copyUrlElement.textContent = 'コピーしました！';
-                        setTimeout(() => {
-                            copyUrlElement.textContent = originalText;
-                        }, 2000);
-                    }).catch(err => {
-                        console.error('Failed to copy URL: ', err);
-                    });
-                });
-            }
         }
     }
 

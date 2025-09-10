@@ -118,6 +118,7 @@ body {
   0% {
     background-color: rgba(10, 5, 15, 0.98);
   }
+
   100% {
     background-color: rgba(40, 5, 15, 0.98);
   }
@@ -127,9 +128,11 @@ body {
   0% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.7;
   }
+
   100% {
     opacity: 1;
   }
@@ -140,6 +143,7 @@ body {
   0% {
     background-color: rgba(10, 5, 15, 0.98);
   }
+
   100% {
     background-color: rgba(5, 40, 5, 0.98);
   }
@@ -149,9 +153,11 @@ body {
   0% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.7;
   }
+
   100% {
     opacity: 1;
   }
@@ -285,7 +291,7 @@ h1 {
 }
 
 .game-info {
-  display: flex;
+  display: block;
   justify-content: space-between;
   align-items: center;
   font-size: 0.9rem;
@@ -293,23 +299,23 @@ h1 {
 }
 
 .game-stats {
-  display: flex;
+  display: block;
   gap: 1rem;
 }
 
 .game-elements {
-  display: flex;
+  display: block;
   gap: 1rem;
   font-size: 0.8rem;
 }
 
 .game-main {
   flex: 1;
-  display: flex;
+  display: block;
   flex-direction: column;
   padding: 1.5rem;
   gap: 1.5rem;
-  overflow-y: hidden;
+  overflow-y: auto;
 }
 
 .scene-description {
@@ -323,7 +329,6 @@ h1 {
   min-height: 150px;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
   transition: opacity 0.5s ease-in-out;
-  overflow-y: hidden;
 }
 
 .scene-description::before {
@@ -337,7 +342,6 @@ h1 {
   gap: 1rem;
   margin-top: auto;
   padding: 0.5rem;
-  overflow-y: hidden;
 }
 
 .choice-button {

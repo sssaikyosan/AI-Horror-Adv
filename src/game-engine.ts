@@ -53,6 +53,7 @@ export class GameEngine {
 4. 各選択肢は短いタイトルと意図の説明から構成される
 5. プレイヤーの選択に基づいてストーリーを更新し、物語を進行させ、適切なタイミングでゲームオーバーや、ゲームクリアの提示をする。
 6. ストーリーは常に恐怖を感じるものである必要はありません。開幕はありふれた日常を描き、突如として恐ろしいことが起きたり、日常の中の少しの違和感が後に恐怖を感じさせるものに変わるのもよいです。もちろん、開幕から恐怖を感じさせる内容もよいです。
+7. ゲームクリアの際にはストーリーに落ちを付けてください。
 
 レスポンスは必ず以下のJSON形式で返してください：
 ゲーム続行中の場合:
@@ -88,7 +89,7 @@ export class GameEngine {
         this.bgmManager.play();
         try {
             let initialScenarioJson = await this.generateInitialScenario();
-            const withoutResult = initialScenarioJson.replace(/<thinking>[\s\S]*?<\/thinking>/g, '');
+            const withoutResult = initialScenarioJson.replace(/<think>[\s\S]*?<\/think>/g, '');
             const jsonMatch = withoutResult.match(/\{[\s\S]*\}/);
             if (!jsonMatch) {
                 throw new Error('Response does not contain valid JSON');
@@ -138,6 +139,7 @@ export class GameEngine {
 4. 各選択肢は短いタイトルと意図の説明から構成される
 5. プレイヤーの選択に基づいてストーリーを更新し、物語を進行させ、適切なタイミングでゲームオーバーや、ゲームクリアの提示をする。
 6. ストーリーは常に恐怖を感じるものである必要はありません。開幕はありふれた日常を描き、突如として恐ろしいことが起きたり、日常の中の少しの違和感が後に恐怖を感じさせるものに変わるのもよいです。もちろん、開幕から恐怖を感じさせる内容もよいです。
+7. ゲームクリアの際にはストーリーにゾッとするような落ちや、納得感のある落ちを付けてください。
 
 レスポンスは必ず以下のJSON形式で返してください：
 ゲーム続行中の場合:
@@ -255,7 +257,7 @@ export class GameEngine {
             console.log('GameEngine: LLMからのレスポンス', response);
 
             // 1. <think>タグ内の内容を除去
-            const withoutResult = response.replace(/<thinking>[\s\S]*?<\/thinking>/g, '');
+            const withoutResult = response.replace(/<think>[\s\S]*?<\/think>/g, '');
             // 2. JSONオブジェクトを抽出する正規表現
             const jsonMatch = withoutResult.match(/\{[\s\S]*\}/);
             if (!jsonMatch) {

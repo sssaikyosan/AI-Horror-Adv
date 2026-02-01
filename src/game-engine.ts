@@ -2,6 +2,7 @@ import { LMStudioClient, type LMStudioMessage } from './lmstudio-client';
 import { GeminiClient } from './gemini-client';
 import { BGMManager } from './bgm-manager';
 import { VoicevoxClient } from './voicevox-client';
+import bgmUrl from './music.mp3'; // Import the music file
 
 export type GameStatus = 'continue' | 'gameover' | 'gameclear';
 
@@ -39,7 +40,7 @@ export class GameEngine {
             gameStatus: 'continue',
             choices: [] // 初期化
         };
-        this.bgmManager = new BGMManager('./music.mp3', 0.2);
+        this.bgmManager = new BGMManager(bgmUrl, 0.2);
         console.log('GameEngine: BGMManager initialized with volume:', this.bgmManager.getVolume());
         this.voicevoxClient = new VoicevoxClient();
         this.selectedSpeakerId = selectedSpeakerId;

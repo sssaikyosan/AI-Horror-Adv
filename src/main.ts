@@ -5,8 +5,11 @@ import { GeminiClient } from './gemini-client';
 
 const copyUrlElement = document.querySelector('#copy-origin-url');
 if (copyUrlElement) {
+  // 初期表示を現在のオリジンに更新
+  copyUrlElement.textContent = window.location.origin;
+
   copyUrlElement.addEventListener('click', () => {
-    const url = 'https://main.ssdojo.net';
+    const url = window.location.origin; // 現在のオリジンを取得
     navigator.clipboard.writeText(url).then(() => {
       // Show feedback to user
       copyUrlElement.textContent = 'コピーしました！';

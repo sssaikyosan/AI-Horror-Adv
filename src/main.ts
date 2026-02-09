@@ -29,7 +29,7 @@ window.addEventListener('DOMContentLoaded', () => {
     apiType: 'gemini',
     apiKey: '',
     apiUrl: 'http://localhost:1234/v1',
-    model: 'gemini-2.5-pro',
+    model: 'gemini-3-pro-preview',
     speakerId: 3,
     bgmVolume: 0.2
   };

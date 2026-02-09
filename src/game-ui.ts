@@ -483,8 +483,8 @@ export class GameUI {
                 option.value = model;
                 option.textContent = model;
 
-                // Set gemini-2.5-pro as default if it exists
-                if (model === 'gemini-2.5-pro') {
+                // Set gemini-3-pro-preview as default if it exists
+                if (model === 'gemini-3-pro-preview') {
                     option.selected = true;
                     hasDefaultModel = true;
                 }
@@ -492,7 +492,7 @@ export class GameUI {
                 this.settingsModelSelect!.appendChild(option);
             });
 
-            // If gemini-2.5-pro doesn't exist but we have models, select the first one
+            // If gemini-3-pro-preview doesn't exist but we have models, select the first one
             if (!hasDefaultModel && models.length > 0) {
                 const firstOption = this.settingsModelSelect!.firstChild as HTMLOptionElement;
                 if (firstOption) {

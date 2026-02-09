@@ -21,7 +21,7 @@ export class GeminiClient {
     private apiKey: string;
     private model: string;
 
-    constructor(apiKey: string, model: string = 'gemini-2.5-pro') {
+    constructor(apiKey: string, model: string = 'gemini-3-pro-preview') {
         this.apiKey = apiKey;
         this.model = model;
     }

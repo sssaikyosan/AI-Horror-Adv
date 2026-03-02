@@ -21,7 +21,7 @@ export class GeminiClient {
     private apiKey: string;
     private model: string;
 
-    constructor(apiKey: string, model: string = 'gemini-3-pro-preview') {
+    constructor(apiKey: string, model: string = 'gemini-2.5-flash') {
         this.apiKey = apiKey;
         this.model = model;
     }
@@ -59,33 +59,68 @@ export class GeminiClient {
         return geminiContents;
     }
 
-    async sendMessage(messages: LMStudioMessage[]): Promise<string> {
+    private async delay(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    private isPerDayQuotaError(errorBody: string): boolean {
+        return errorBody.includes('PerDay') || errorBody.includes('per day') || errorBody.includes('daily');
+    }
+
+    async sendMessage(messages: LMStudioMessage[], maxRetries: number = 2, retryDelay: number = 30000): Promise<string> {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${this.apiKey}`;
 
         const requestBody: any = {
             contents: this.transformMessagesToGemini(messages),
         };
 
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestBody),
-            });
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody),
+                });
 
-            if (!response.ok) {
-                const errorBody = await response.text();
-                throw new Error(`HTTP error! status: ${response.status}, body: ${errorBody}`);
+                if (response.status === 429) {
+                    const errorBody = await response.text();
+                    console.warn(`Gemini API 429 (attempt ${attempt + 1}/${maxRetries + 1}):`, errorBody);
+
+                    if (this.isPerDayQuotaError(errorBody)) {
+                        throw new Error('APIの1日の利用上限に達しました。明日再度お試しいただくか、Google AI Studioで有料プランにアップグレードしてください。');
+                    }
+
+                    if (attempt < maxRetries) {
+                        console.log(`Rate limited. Retrying in ${retryDelay / 1000} seconds...`);
+                        await this.delay(retryDelay);
+                        continue;
+                    }
+
+                    throw new Error('APIリクエストが一時的に制限されています。しばらく待ってから再度お試しください。');
+                }
+
+                if (!response.ok) {
+                    const errorBody = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, body: ${errorBody}`);
+                }
+
+                const data: GeminiResponse = await response.json();
+                return data.candidates[0]?.content.parts[0]?.text || '';
+            } catch (error) {
+                if (error instanceof Error && (
+                    error.message.includes('APIの1日の利用上限') ||
+                    error.message.includes('APIリクエストが一時的に制限')
+                )) {
+                    throw error;
+                }
+                console.error('Gemini API error:', error);
+                throw new Error(`Gemini API request failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
             }
-
-            const data: GeminiResponse = await response.json();
-            return data.candidates[0]?.content.parts[0]?.text || '';
-        } catch (error) {
-            console.error('Gemini API error:', error);
-            throw new Error(`Gemini API request failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
+
+        throw new Error('APIリクエストが一時的に制限されています。しばらく待ってから再度お試しください。');
     }
 
     async getAvailableModels(): Promise<string[]> {
